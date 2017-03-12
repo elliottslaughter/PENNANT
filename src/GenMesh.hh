@@ -25,16 +25,16 @@ class GenMesh {
 public:
 
     std::string meshtype;       // generated mesh type
-    int gnzx, gnzy;             // global number of zones, in x and y
+    long long gnzx, gnzy;             // global number of zones, in x and y
                                 // directions
     double lenx, leny;          // length of mesh sides, in x and y
                                 // directions
-    int numpex, numpey;         // number of PEs to use, in x and y
+    long long numpex, numpey;         // number of PEs to use, in x and y
                                 // directions
-    int mypex, mypey;           // my PE index, in x and y directions
-    int nzx, nzy;               // (local) number of zones, in x and y
+    long long mypex, mypey;           // my PE index, in x and y directions
+    long long nzx, nzy;               // (local) number of zones, in x and y
                                 // directions
-    int zxoffset, zyoffset;     // offsets of local zone array into
+    long long zxoffset, zyoffset;     // offsets of local zone array into
                                 // global, in x and y directions
 
     GenMesh(const InputFile* inp);
@@ -42,51 +42,51 @@ public:
 
     void generate(
             std::vector<double2>& pointpos,
-            std::vector<int>& zonestart,
-            std::vector<int>& zonesize,
-            std::vector<int>& zonepoints,
-            std::vector<int>& slavemstrpes,
-            std::vector<int>& slavemstrcounts,
-            std::vector<int>& slavepoints,
-            std::vector<int>& masterslvpes,
-            std::vector<int>& masterslvcounts,
-            std::vector<int>& masterpoints);
+            std::vector<long long>& zonestart,
+            std::vector<long long>& zonesize,
+            std::vector<long long>& zonepoints,
+            std::vector<long long>& slavemstrpes,
+            std::vector<long long>& slavemstrcounts,
+            std::vector<long long>& slavepoints,
+            std::vector<long long>& masterslvpes,
+            std::vector<long long>& masterslvcounts,
+            std::vector<long long>& masterpoints);
 
     void generateRect(
             std::vector<double2>& pointpos,
-            std::vector<int>& zonestart,
-            std::vector<int>& zonesize,
-            std::vector<int>& zonepoints,
-            std::vector<int>& slavemstrpes,
-            std::vector<int>& slavemstrcounts,
-            std::vector<int>& slavepoints,
-            std::vector<int>& masterslvpes,
-            std::vector<int>& masterslvcounts,
-            std::vector<int>& masterpoints);
+            std::vector<long long>& zonestart,
+            std::vector<long long>& zonesize,
+            std::vector<long long>& zonepoints,
+            std::vector<long long>& slavemstrpes,
+            std::vector<long long>& slavemstrcounts,
+            std::vector<long long>& slavepoints,
+            std::vector<long long>& masterslvpes,
+            std::vector<long long>& masterslvcounts,
+            std::vector<long long>& masterpoints);
 
     void generatePie(
             std::vector<double2>& pointpos,
-            std::vector<int>& zonestart,
-            std::vector<int>& zonesize,
-            std::vector<int>& zonepoints,
-            std::vector<int>& slavemstrpes,
-            std::vector<int>& slavemstrcounts,
-            std::vector<int>& slavepoints,
-            std::vector<int>& masterslvpes,
-            std::vector<int>& masterslvcounts,
-            std::vector<int>& masterpoints);
+            std::vector<long long>& zonestart,
+            std::vector<long long>& zonesize,
+            std::vector<long long>& zonepoints,
+            std::vector<long long>& slavemstrpes,
+            std::vector<long long>& slavemstrcounts,
+            std::vector<long long>& slavepoints,
+            std::vector<long long>& masterslvpes,
+            std::vector<long long>& masterslvcounts,
+            std::vector<long long>& masterpoints);
 
     void generateHex(
             std::vector<double2>& pointpos,
-            std::vector<int>& zonestart,
-            std::vector<int>& zonesize,
-            std::vector<int>& zonepoints,
-            std::vector<int>& slavemstrpes,
-            std::vector<int>& slavemstrcounts,
-            std::vector<int>& slavepoints,
-            std::vector<int>& masterslvpes,
-            std::vector<int>& masterslvcounts,
-            std::vector<int>& masterpoints);
+            std::vector<long long>& zonestart,
+            std::vector<long long>& zonesize,
+            std::vector<long long>& zonepoints,
+            std::vector<long long>& slavemstrpes,
+            std::vector<long long>& slavemstrcounts,
+            std::vector<long long>& slavepoints,
+            std::vector<long long>& masterslvpes,
+            std::vector<long long>& masterslvcounts,
+            std::vector<long long>& masterpoints);
 
     void calcNumPE();
 

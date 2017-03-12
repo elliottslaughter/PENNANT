@@ -42,8 +42,8 @@ public:
             const double dt,
             double* zp,
             double* zss,
-            const int zfirst,
-            const int zlast);
+            const long long zfirst,
+            const long long zlast);
 
     void calcEOS(
             const double* zr,
@@ -51,15 +51,15 @@ public:
             double* zp,
             double* z0per,
             double* zss,
-            const int zfirst,
-            const int zlast);
+            const long long zfirst,
+            const long long zlast);
 
     void calcForce(
             const double* zp,
             const double2* ssurfp,
             double2* sf,
-            const int sfirst,
-            const int slast);
+            const long long sfirst,
+            const long long slast);
 
 };  // class PolyGas
 

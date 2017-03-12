@@ -27,7 +27,7 @@
 namespace Memory {
 
 template<typename T>
-inline T* alloc(const int count) {
+inline T* alloc(const long long count) {
 #if defined(_OPENMP) && defined(__INTEL_COMPILER)
     return (T*) kmp_malloc(count * sizeof(T));
 #else

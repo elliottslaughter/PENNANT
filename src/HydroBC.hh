@@ -27,24 +27,24 @@ public:
     // associated mesh object
     Mesh* mesh;
 
-    int numb;                      // number of bdy points
+    long long numb;                      // number of bdy points
     double2 vfix;                  // vector perp. to fixed plane
-    int* mapbp;                    // map: bdy point -> point
-    std::vector<int> pchbfirst;    // start/stop index for bdy pt chunks
-    std::vector<int> pchblast;
+    long long* mapbp;                    // map: bdy point -> point
+    std::vector<long long> pchbfirst;    // start/stop index for bdy pt chunks
+    std::vector<long long> pchblast;
 
     HydroBC(
             Mesh* msh,
             const double2 v,
-            const std::vector<int>& mbp);
+            const std::vector<long long>& mbp);
 
     ~HydroBC();
 
     void applyFixedBC(
             double2* pu,
             double2* pf,
-            const int bfirst,
-            const int blast);
+            const long long bfirst,
+            const long long blast);
 
 }; // class HydroBC
 

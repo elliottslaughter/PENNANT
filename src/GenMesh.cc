@@ -83,23 +83,23 @@ GenMesh::~GenMesh() {}
 
 void GenMesh::generate(
         std::vector<double2>& pointpos,
-        std::vector<int>& zonestart,
-        std::vector<int>& zonesize,
-        std::vector<int>& zonepoints,
-        std::vector<int>& slavemstrpes,
-        std::vector<int>& slavemstrcounts,
-        std::vector<int>& slavepoints,
-        std::vector<int>& masterslvpes,
-        std::vector<int>& masterslvcounts,
-        std::vector<int>& masterpoints){
+        std::vector<long long>& zonestart,
+        std::vector<long long>& zonesize,
+        std::vector<long long>& zonepoints,
+        std::vector<long long>& slavemstrpes,
+        std::vector<long long>& slavemstrcounts,
+        std::vector<long long>& slavepoints,
+        std::vector<long long>& masterslvpes,
+        std::vector<long long>& masterslvcounts,
+        std::vector<long long>& masterpoints){
 
     // do calculations common to all mesh types
     calcNumPE();
     zxoffset = mypex * gnzx / numpex;
-    const int zxstop = (mypex + 1) * gnzx / numpex;
+    const long long zxstop = (mypex + 1) * gnzx / numpex;
     nzx = zxstop - zxoffset;
     zyoffset = mypey * gnzy / numpey;
-    const int zystop = (mypey + 1) * gnzy / numpey;
+    const long long zystop = (mypey + 1) * gnzy / numpey;
     nzy = zystop - zyoffset;
 
     // mesh type-specific calculations
@@ -121,31 +121,31 @@ void GenMesh::generate(
 
 void GenMesh::generateRect(
         std::vector<double2>& pointpos,
-        std::vector<int>& zonestart,
-        std::vector<int>& zonesize,
-        std::vector<int>& zonepoints,
-        std::vector<int>& slavemstrpes,
-        std::vector<int>& slavemstrcounts,
-        std::vector<int>& slavepoints,
-        std::vector<int>& masterslvpes,
-        std::vector<int>& masterslvcounts,
-        std::vector<int>& masterpoints) {
+        std::vector<long long>& zonestart,
+        std::vector<long long>& zonesize,
+        std::vector<long long>& zonepoints,
+        std::vector<long long>& slavemstrpes,
+        std::vector<long long>& slavemstrcounts,
+        std::vector<long long>& slavepoints,
+        std::vector<long long>& masterslvpes,
+        std::vector<long long>& masterslvcounts,
+        std::vector<long long>& masterpoints) {
 
     using Parallel::numpe;
     using Parallel::mype;
 
-    const int nz = nzx * nzy;
-    const int npx = nzx + 1;
-    const int npy = nzy + 1;
-    const int np = npx * npy;
+    const long long nz = nzx * nzy;
+    const long long npx = nzx + 1;
+    const long long npy = nzy + 1;
+    const long long np = npx * npy;
 
     // generate point coordinates
     pointpos.reserve(np);
     double dx = lenx / (double) gnzx;
     double dy = leny / (double) gnzy;
-    for (int j = 0; j < npy; ++j) {
+    for (long long j = 0; j < npy; ++j) {
         double y = dy * (double) (j + zyoffset);
-        for (int i = 0; i < npx; ++i) {
+        for (long long i = 0; i < npx; ++i) {
             double x = dx * (double) (i + zxoffset);
             pointpos.push_back(make_double2(x, y));
         }
@@ -155,11 +155,11 @@ void GenMesh::generateRect(
     zonestart.reserve(nz);
     zonesize.reserve(nz);
     zonepoints.reserve(4 * nz);
-    for (int j = 0; j < nzy; ++j) {
-        for (int i = 0; i < nzx; ++i) {
+    for (long long j = 0; j < nzy; ++j) {
+        for (long long i = 0; i < nzx; ++i) {
             zonestart.push_back(zonepoints.size());
             zonesize.push_back(4);
-            int p0 = j * npx + i;
+            long long p0 = j * npx + i;
             zonepoints.push_back(p0);
             zonepoints.push_back(p0 + 1);
             zonepoints.push_back(p0 + npx + 1);
@@ -177,17 +177,17 @@ void GenMesh::generateRect(
     // enumerate slave points
     // slave point with master at lower left
     if (mypex != 0 && mypey != 0) {
-        int mstrpe = mype - numpex - 1;
+        long long mstrpe = mype - numpex - 1;
         slavepoints.push_back(0);
         slavemstrpes.push_back(mstrpe);
         slavemstrcounts.push_back(1);
     }
     // slave points with master below
     if (mypey != 0) {
-        int mstrpe = mype - numpex;
-        int oldsize = slavepoints.size();
-        int p = 0;
-        for (int i = 0; i < npx; ++i) {
+        long long mstrpe = mype - numpex;
+        long long oldsize = slavepoints.size();
+        long long p = 0;
+        for (long long i = 0; i < npx; ++i) {
             if (i == 0 && mypex != 0) { p++; continue; }
             slavepoints.push_back(p);
             p++;
@@ -197,10 +197,10 @@ void GenMesh::generateRect(
     }
     // slave points with master to left
     if (mypex != 0) {
-        int mstrpe = mype - 1;
-        int oldsize = slavepoints.size();
-        int p = 0;
-        for (int j = 0; j < npy; ++j) {
+        long long mstrpe = mype - 1;
+        long long oldsize = slavepoints.size();
+        long long p = 0;
+        for (long long j = 0; j < npy; ++j) {
             if (j == 0 && mypey != 0) { p += npx; continue; }
             slavepoints.push_back(p);
             p += npx;
@@ -212,10 +212,10 @@ void GenMesh::generateRect(
     // enumerate master points
     // master points with slave to right
     if (mypex != numpex - 1) {
-        int slvpe = mype + 1;
-        int oldsize = masterpoints.size();
-        int p = npx - 1;
-        for (int j = 0; j < npy; ++j) {
+        long long slvpe = mype + 1;
+        long long oldsize = masterpoints.size();
+        long long p = npx - 1;
+        for (long long j = 0; j < npy; ++j) {
             if (j == 0 && mypey != 0) { p += npx; continue; }
             masterpoints.push_back(p);
             p += npx;
@@ -225,10 +225,10 @@ void GenMesh::generateRect(
     }
     // master points with slave above
     if (mypey != numpey - 1) {
-        int slvpe = mype + numpex;
-        int oldsize = masterpoints.size();
-        int p = (npy - 1) * npx;
-        for (int i = 0; i < npx; ++i) {
+        long long slvpe = mype + numpex;
+        long long oldsize = masterpoints.size();
+        long long p = (npy - 1) * npx;
+        for (long long i = 0; i < npx; ++i) {
             if (i == 0 && mypex != 0) { p++; continue; }
             masterpoints.push_back(p);
             p++;
@@ -238,8 +238,8 @@ void GenMesh::generateRect(
     }
     // master point with slave at upper right
     if (mypex != numpex - 1 && mypey != numpey - 1) {
-        int slvpe = mype + numpex + 1;
-        int p = npx * npy - 1;
+        long long slvpe = mype + numpex + 1;
+        long long p = npx * npy - 1;
         masterpoints.push_back(p);
         masterslvpes.push_back(slvpe);
         masterslvcounts.push_back(1);
@@ -250,35 +250,35 @@ void GenMesh::generateRect(
 
 void GenMesh::generatePie(
         std::vector<double2>& pointpos,
-        std::vector<int>& zonestart,
-        std::vector<int>& zonesize,
-        std::vector<int>& zonepoints,
-        std::vector<int>& slavemstrpes,
-        std::vector<int>& slavemstrcounts,
-        std::vector<int>& slavepoints,
-        std::vector<int>& masterslvpes,
-        std::vector<int>& masterslvcounts,
-        std::vector<int>& masterpoints) {
+        std::vector<long long>& zonestart,
+        std::vector<long long>& zonesize,
+        std::vector<long long>& zonepoints,
+        std::vector<long long>& slavemstrpes,
+        std::vector<long long>& slavemstrcounts,
+        std::vector<long long>& slavepoints,
+        std::vector<long long>& masterslvpes,
+        std::vector<long long>& masterslvcounts,
+        std::vector<long long>& masterpoints) {
 
     using Parallel::numpe;
     using Parallel::mype;
 
-    const int nz = nzx * nzy;
-    const int npx = nzx + 1;
-    const int npy = nzy + 1;
-    const int np = (mypey == 0 ? npx * (npy - 1) + 1 : npx * npy);
+    const long long nz = nzx * nzy;
+    const long long npx = nzx + 1;
+    const long long npy = nzy + 1;
+    const long long np = (mypey == 0 ? npx * (npy - 1) + 1 : npx * npy);
 
     // generate point coordinates
     pointpos.reserve(np);
     double dth = lenx / (double) gnzx;
     double dr  = leny / (double) gnzy;
-    for (int j = 0; j < npy; ++j) {
+    for (long long j = 0; j < npy; ++j) {
         if (j + zyoffset == 0) {
             pointpos.push_back(make_double2(0., 0.));
             continue;
         }
         double r = dr * (double) (j + zyoffset);
-        for (int i = 0; i < npx; ++i) {
+        for (long long i = 0; i < npx; ++i) {
             double th = dth * (double) (gnzx - (i + zxoffset));
             double x = r * cos(th);
             double y = r * sin(th);
@@ -290,10 +290,10 @@ void GenMesh::generatePie(
     zonestart.reserve(nz);
     zonesize.reserve(nz);
     zonepoints.reserve(4 * nz);
-    for (int j = 0; j < nzy; ++j) {
-        for (int i = 0; i < nzx; ++i) {
+    for (long long j = 0; j < nzy; ++j) {
+        for (long long i = 0; i < nzx; ++i) {
             zonestart.push_back(zonepoints.size());
-            int p0 = j * npx + i;
+            long long p0 = j * npx + i;
             if (mypey == 0) p0 -= npx - 1;
             if (j + zyoffset == 0) {
                 zonesize.push_back(3);
@@ -319,17 +319,17 @@ void GenMesh::generatePie(
     // enumerate slave points
     // slave point with master at lower left
     if (mypex != 0 && mypey != 0) {
-        int mstrpe = mype - numpex - 1;
+        long long mstrpe = mype - numpex - 1;
         slavepoints.push_back(0);
         slavemstrpes.push_back(mstrpe);
         slavemstrcounts.push_back(1);
     }
     // slave points with master below
     if (mypey != 0) {
-        int mstrpe = mype - numpex;
-        int oldsize = slavepoints.size();
-        int p = 0;
-        for (int i = 0; i < npx; ++i) {
+        long long mstrpe = mype - numpex;
+        long long oldsize = slavepoints.size();
+        long long p = 0;
+        for (long long i = 0; i < npx; ++i) {
             if (i == 0 && mypex != 0) { p++; continue; }
             slavepoints.push_back(p);
             p++;
@@ -339,8 +339,8 @@ void GenMesh::generatePie(
     }
     // slave points with master to left
     if (mypex != 0) {
-        int mstrpe = mype - 1;
-        int oldsize = slavepoints.size();
+        long long mstrpe = mype - 1;
+        long long oldsize = slavepoints.size();
         if (mypey == 0) {
             slavepoints.push_back(0);
             // special case:
@@ -351,8 +351,8 @@ void GenMesh::generatePie(
                 oldsize += 1;
             }
         }
-        int p = (mypey > 0 ? npx : 1);
-        for (int j = 1; j < npy; ++j) {
+        long long p = (mypey > 0 ? npx : 1);
+        for (long long j = 1; j < npy; ++j) {
             slavepoints.push_back(p);
             p += npx;
         }
@@ -363,14 +363,14 @@ void GenMesh::generatePie(
     // enumerate master points
     // master points with slave to right
     if (mypex != numpex - 1) {
-        int slvpe = mype + 1;
-        int oldsize = masterpoints.size();
+        long long slvpe = mype + 1;
+        long long oldsize = masterpoints.size();
         // special case:  origin as master for slave on PE 1
         if (mypex == 0 && mypey == 0) {
             masterpoints.push_back(0);
         }
-        int p = (mypey > 0 ? 2 * npx - 1 : npx);
-        for (int j = 1; j < npy; ++j) {
+        long long p = (mypey > 0 ? 2 * npx - 1 : npx);
+        for (long long j = 1; j < npy; ++j) {
             masterpoints.push_back(p);
             p += npx;
         }
@@ -378,7 +378,7 @@ void GenMesh::generatePie(
         masterslvcounts.push_back(masterpoints.size() - oldsize);
         // special case:  origin as master for slaves on PEs > 1
         if (mypex == 0 && mypey == 0) {
-            for (int slvpe = 2; slvpe < numpex; ++slvpe) {
+            for (long long slvpe = 2; slvpe < numpex; ++slvpe) {
                 masterpoints.push_back(0);
                 masterslvpes.push_back(slvpe);
                 masterslvcounts.push_back(1);
@@ -387,11 +387,11 @@ void GenMesh::generatePie(
     }
     // master points with slave above
     if (mypey != numpey - 1) {
-        int slvpe = mype + numpex;
-        int oldsize = masterpoints.size();
-        int p = (npy - 1) * npx;
+        long long slvpe = mype + numpex;
+        long long oldsize = masterpoints.size();
+        long long p = (npy - 1) * npx;
         if (mypey == 0) p -= npx - 1;
-        for (int i = 0; i < npx; ++i) {
+        for (long long i = 0; i < npx; ++i) {
             if (i == 0 && mypex != 0) { p++; continue; }
             masterpoints.push_back(p);
             p++;
@@ -401,8 +401,8 @@ void GenMesh::generatePie(
     }
     // master point with slave at upper right
     if (mypex != numpex - 1 && mypey != numpey - 1) {
-        int slvpe = mype + numpex + 1;
-        int p = npx * npy - 1;
+        long long slvpe = mype + numpex + 1;
+        long long p = npx * npy - 1;
         if (mypey == 0) p -= npx - 1;
         masterpoints.push_back(p);
         masterslvpes.push_back(slvpe);
@@ -414,36 +414,36 @@ void GenMesh::generatePie(
 
 void GenMesh::generateHex(
         std::vector<double2>& pointpos,
-        std::vector<int>& zonestart,
-        std::vector<int>& zonesize,
-        std::vector<int>& zonepoints,
-        std::vector<int>& slavemstrpes,
-        std::vector<int>& slavemstrcounts,
-        std::vector<int>& slavepoints,
-        std::vector<int>& masterslvpes,
-        std::vector<int>& masterslvcounts,
-        std::vector<int>& masterpoints) {
+        std::vector<long long>& zonestart,
+        std::vector<long long>& zonesize,
+        std::vector<long long>& zonepoints,
+        std::vector<long long>& slavemstrpes,
+        std::vector<long long>& slavemstrcounts,
+        std::vector<long long>& slavepoints,
+        std::vector<long long>& masterslvpes,
+        std::vector<long long>& masterslvcounts,
+        std::vector<long long>& masterpoints) {
 
     using Parallel::numpe;
     using Parallel::mype;
 
-    const int nz = nzx * nzy;
-    const int npx = nzx + 1;
-    const int npy = nzy + 1;
+    const long long nz = nzx * nzy;
+    const long long npx = nzx + 1;
+    const long long npy = nzy + 1;
 
     // generate point coordinates
     pointpos.reserve(2 * npx * npy);  // upper bound
     double dx = lenx / (double) (gnzx - 1);
     double dy = leny / (double) (gnzy - 1);
 
-    vector<int> pbase(npy);
-    for (int j = 0; j < npy; ++j) {
+    vector<long long> pbase(npy);
+    for (long long j = 0; j < npy; ++j) {
         pbase[j] = pointpos.size();
-        int gj = j + zyoffset;
+        long long gj = j + zyoffset;
         double y = dy * ((double) gj - 0.5);
         y = max(0., min(leny, y));
-        for (int i = 0; i < npx; ++i) {
-            int gi = i + zxoffset;
+        for (long long i = 0; i < npx; ++i) {
+            long long gi = i + zxoffset;
             double x = dx * ((double) gi - 0.5);
             x = max(0., min(lenx, x));
             if (gi == 0 || gi == gnzx || gj == 0 || gj == gnzy)
@@ -462,23 +462,23 @@ void GenMesh::generateHex(
             }
         } // for i
     } // for j
-    int np = pointpos.size();
+    long long np = pointpos.size();
 
     // generate zone adjacency lists
     zonestart.reserve(nz);
     zonesize.reserve(nz);
     zonepoints.reserve(6 * nz);  // upper bound
-    for (int j = 0; j < nzy; ++j) {
-        int gj = j + zyoffset;
-        int pbasel = pbase[j];
-        int pbaseh = pbase[j+1];
+    for (long long j = 0; j < nzy; ++j) {
+        long long gj = j + zyoffset;
+        long long pbasel = pbase[j];
+        long long pbaseh = pbase[j+1];
         if (mypex > 0) {
             if (gj > 0) pbasel += 1;
             if (j < nzy - 1) pbaseh += 1;
         }
-        for (int i = 0; i < nzx; ++i) {
-            int gi = i + zxoffset;
-            vector<int> v(6);
+        for (long long i = 0; i < nzx; ++i) {
+            long long gi = i + zxoffset;
+            vector<long long> v(6);
             v[1] = pbasel + 2 * i;
             v[0] = v[1] - 1;
             v[2] = v[1] + 1;
@@ -518,7 +518,7 @@ void GenMesh::generateHex(
     // enumerate slave points
     // slave points with master at lower left
     if (mypex != 0 && mypey != 0) {
-        int mstrpe = mype - numpex - 1;
+        long long mstrpe = mype - numpex - 1;
         slavepoints.push_back(0);
         slavepoints.push_back(1);
         slavemstrpes.push_back(mstrpe);
@@ -526,10 +526,10 @@ void GenMesh::generateHex(
     }
     // slave points with master below
     if (mypey != 0) {
-        int p = 0;
-        int mstrpe = mype - numpex;
-        int oldsize = slavepoints.size();
-        for (int i = 0; i < npx; ++i) {
+        long long p = 0;
+        long long mstrpe = mype - numpex;
+        long long oldsize = slavepoints.size();
+        for (long long i = 0; i < npx; ++i) {
             if (i == 0 && mypex != 0) {
                 p += 2;
                 continue;
@@ -546,11 +546,11 @@ void GenMesh::generateHex(
     }  // if mypey != 0
     // slave points with master to left
     if (mypex != 0) {
-        int mstrpe = mype - 1;
-        int oldsize = slavepoints.size();
-        for (int j = 0; j < npy; ++j) {
+        long long mstrpe = mype - 1;
+        long long oldsize = slavepoints.size();
+        for (long long j = 0; j < npy; ++j) {
             if (j == 0 && mypey != 0) continue;
-            int p = pbase[j];
+            long long p = pbase[j];
             if (j == 0 || j == nzy)
                 slavepoints.push_back(p++);
             else {
@@ -565,11 +565,11 @@ void GenMesh::generateHex(
     // enumerate master points
     // master points with slave to right
     if (mypex != numpex - 1) {
-        int slvpe = mype + 1;
-        int oldsize = masterpoints.size();
-        for (int j = 0; j < npy; ++j) {
+        long long slvpe = mype + 1;
+        long long oldsize = masterpoints.size();
+        for (long long j = 0; j < npy; ++j) {
             if (j == 0 && mypey != 0) continue;
-            int p = (j == nzy ? np : pbase[j+1]);
+            long long p = (j == nzy ? np : pbase[j+1]);
             if (j == 0 || j == nzy)
                 masterpoints.push_back(p-1);
             else {
@@ -582,10 +582,10 @@ void GenMesh::generateHex(
     }  // if mypex != numpex - 1
     // master points with slave above
     if (mypey != numpey - 1) {
-        int p = pbase[nzy];
-        int slvpe = mype + numpex;
-        int oldsize = masterpoints.size();
-        for (int i = 0; i < npx; ++i) {
+        long long p = pbase[nzy];
+        long long slvpe = mype + numpex;
+        long long oldsize = masterpoints.size();
+        for (long long i = 0; i < npx; ++i) {
             if (i == 0 && mypex != 0) {
                 p++;
                 continue;
@@ -602,7 +602,7 @@ void GenMesh::generateHex(
     }  // if mypey != numpey - 1
     // master points with slave at upper right
     if (mypex != numpex - 1 && mypey != numpey - 1) {
-        int slvpe = mype + numpex + 1;
+        long long slvpe = mype + numpex + 1;
         masterpoints.push_back(np-2);
         masterpoints.push_back(np-1);
         masterslvpes.push_back(slvpe);
@@ -630,10 +630,10 @@ void GenMesh::calcNumPE() {
     double n = sqrt(numpe * nx / ny);
     // need to constrain n to be an integer with numpe % n == 0
     // try rounding n both up and down
-    int n1 = floor(n + 1.e-12);
-    n1 = max(n1, 1);
+    long long n1 = floor(n + 1.e-12);
+    n1 = max(n1, 1LL);
     while (numpe % n1 != 0) --n1;
-    int n2 = ceil(n - 1.e-12);
+    long long n2 = ceil(n - 1.e-12);
     while (numpe % n2 != 0) ++n2;
     // pick whichever of n1 and n2 gives blocks closest to square,
     // i.e. gives the shortest long side

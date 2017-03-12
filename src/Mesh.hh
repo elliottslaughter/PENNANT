@@ -44,34 +44,34 @@ public:
     // mesh variables
     // (See documentation for more details on the mesh
     //  data structures...)
-    int nump, nume, numz, nums, numc;
+    long long nump, nume, numz, nums, numc;
                        // number of points, edges, zones,
                        // sides, corners, resp.
-    int numsbad;       // number of bad sides (negative volume)
-    int* mapsp1;       // maps: side -> points 1 and 2
-    int* mapsp2;
-    int* mapsz;        // map: side -> zone
-    int* mapse;        // map: side -> edge
-    int* mapss3;       // map: side -> previous side
-    int* mapss4;       // map: side -> next side
+    long long numsbad;       // number of bad sides (negative volume)
+    long long* mapsp1;       // maps: side -> points 1 and 2
+    long long* mapsp2;
+    long long* mapsz;        // map: side -> zone
+    long long* mapse;        // map: side -> edge
+    long long* mapss3;       // map: side -> previous side
+    long long* mapss4;       // map: side -> next side
 
     // point-to-corner inverse map is stored as a linked list...
-    int* mappcfirst;   // map:  point -> first corner
-    int* mapccnext;    // map:  corner -> next corner
+    long long* mappcfirst;   // map:  point -> first corner
+    long long* mapccnext;    // map:  corner -> next corner
 
     // mpi comm variables
-    int nummstrpe;     // number of messages mype sends to master pes
-    int numslvpe;      // number of messages mype receives from slave pes
-    int numprx;        // number of proxies on mype
-    int numslv;        // number of slaves on mype
-    int* mapslvpepe;   // map: slave pe -> (global) pe
-    int* mapslvpeprx1; // map: slave pe -> first proxy in proxy buffer
-    int* mapprxp;      // map: proxy -> corresponding (master) point
-    int* slvpenumprx;  // number of proxies for each slave pe
-    int* mapmstrpepe;  // map: master pe -> (global) pe
-    int* mstrpenumslv; // number of slaves for each master pe
-    int* mapmstrpeslv1;// map: master pe -> first slave in slave buffer
-    int* mapslvp;      // map: slave -> corresponding (slave) point
+    long long nummstrpe;     // number of messages mype sends to master pes
+    long long numslvpe;      // number of messages mype receives from slave pes
+    long long numprx;        // number of proxies on mype
+    long long numslv;        // number of slaves on mype
+    long long* mapslvpepe;   // map: slave pe -> (global) pe
+    long long* mapslvpeprx1; // map: slave pe -> first proxy in proxy buffer
+    long long* mapprxp;      // map: proxy -> corresponding (master) point
+    long long* slvpenumprx;  // number of proxies for each slave pe
+    long long* mapmstrpepe;  // map: master pe -> (global) pe
+    long long* mstrpenumslv; // number of slaves for each master pe
+    long long* mapmstrpeslv1;// map: master pe -> first slave in slave buffer
+    long long* mapslvp;      // map: slave -> corresponding (slave) point
 
     int* znump;        // number of points in zone
 
@@ -98,17 +98,17 @@ public:
     double* smf;       // side mass fraction
     double* zdl;       // zone characteristic length
 
-    int numsch;                    // number of side chunks
-    std::vector<int> schsfirst;    // start/stop index for side chunks
-    std::vector<int> schslast;
-    std::vector<int> schzfirst;    // start/stop index for zone chunks
-    std::vector<int> schzlast;
-    int numpch;                    // number of point chunks
-    std::vector<int> pchpfirst;    // start/stop index for point chunks
-    std::vector<int> pchplast;
-    int numzch;                    // number of zone chunks
-    std::vector<int> zchzfirst;    // start/stop index for zone chunks
-    std::vector<int> zchzlast;
+    long long numsch;                    // number of side chunks
+    std::vector<long long> schsfirst;    // start/stop index for side chunks
+    std::vector<long long> schslast;
+    std::vector<long long> schzfirst;    // start/stop index for zone chunks
+    std::vector<long long> schzlast;
+    long long numpch;                    // number of point chunks
+    std::vector<long long> pchpfirst;    // start/stop index for point chunks
+    std::vector<long long> pchplast;
+    long long numzch;                    // number of zone chunks
+    std::vector<long long> zchzfirst;    // start/stop index for zone chunks
+    std::vector<long long> zchzlast;
 
     Mesh(const InputFile* inp);
     ~Mesh();
@@ -117,9 +117,9 @@ public:
 
     // populate mapping arrays
     void initSides(
-            const std::vector<int>& cellstart,
-            const std::vector<int>& cellsize,
-            const std::vector<int>& cellnodes);
+            const std::vector<long long>& cellstart,
+            const std::vector<long long>& cellsize,
+            const std::vector<long long>& cellnodes);
     void initEdges();
 
     // populate chunk information
@@ -129,12 +129,12 @@ public:
     void initInvMap();
 
     void initParallel(
-            const std::vector<int>& slavemstrpes,
-            const std::vector<int>& slavemstrcounts,
-            const std::vector<int>& slavepoints,
-            const std::vector<int>& masterslvpes,
-            const std::vector<int>& masterslvcounts,
-            const std::vector<int>& masterpoints);
+            const std::vector<long long>& slavemstrpes,
+            const std::vector<long long>& slavemstrcounts,
+            const std::vector<long long>& slavepoints,
+            const std::vector<long long>& masterslvpes,
+            const std::vector<long long>& masterslvcounts,
+            const std::vector<long long>& masterpoints);
 
     // write mesh statistics
     void writeStats();
@@ -149,23 +149,23 @@ public:
             const double* zp);
 
     // find plane with constant x, y value
-    std::vector<int> getXPlane(const double c);
-    std::vector<int> getYPlane(const double c);
+    std::vector<long long> getXPlane(const double c);
+    std::vector<long long> getYPlane(const double c);
 
     // compute chunks for a given plane
     void getPlaneChunks(
-            const int numb,
-            const int* mapbp,
-            std::vector<int>& pchbfirst,
-            std::vector<int>& pchblast);
+            const long long numb,
+            const long long* mapbp,
+            std::vector<long long>& pchbfirst,
+            std::vector<long long>& pchblast);
 
     // compute edge, zone centers
     void calcCtrs(
             const double2* px,
             double2* ex,
             double2* zx,
-            const int sfirst,
-            const int slast);
+            const long long sfirst,
+            const long long slast);
 
     // compute side, corner, zone volumes
     void calcVols(
@@ -175,8 +175,8 @@ public:
             double* svol,
             double* zarea,
             double* zvol,
-            const int sfirst,
-            const int slast);
+            const long long sfirst,
+            const long long slast);
 
     // check to see if previous volume computation had any
     // sides with negative volumes
@@ -187,30 +187,30 @@ public:
             const double* sarea,
             const double* zarea,
             double* smf,
-            const int sfirst,
-            const int slast);
+            const long long sfirst,
+            const long long slast);
 
     // compute surface vectors for median mesh
     void calcSurfVecs(
             const double2* zx,
             const double2* ex,
             double2* ssurf,
-            const int sfirst,
-            const int slast);
+            const long long sfirst,
+            const long long slast);
 
     // compute edge lengths
     void calcEdgeLen(
             const double2* px,
             double* elen,
-            const int sfirst,
-            const int slast);
+            const long long sfirst,
+            const long long slast);
 
     // compute characteristic lengths
     void calcCharLen(
             const double* sarea,
             double* zdl,
-            const int sfirst,
-            const int slast);
+            const long long sfirst,
+            const long long slast);
 
     // sum corner variables to points (double or double2)
     template <typename T>

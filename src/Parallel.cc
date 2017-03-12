@@ -79,6 +79,16 @@ void globalSum(int& x) {
 }
 
 
+void globalSum(long long& x) {
+    if (numpe == 1) return;
+#ifdef USE_MPI
+    long long y;
+    MPI_Allreduce(&x, &y, 1, MPI_LONG_LONG, MPI_SUM, MPI_COMM_WORLD);
+    x = y;
+#endif
+}
+
+
 void globalSum(int64_t& x) {
     if (numpe == 1) return;
 #ifdef USE_MPI
@@ -99,44 +109,44 @@ void globalSum(double& x) {
 }
 
 
-void gather(int x, int* y) {
+void gather(long long x, long long* y) {
     if (numpe == 1) {
         y[0] = x;
         return;
     }
 #ifdef USE_MPI
-    MPI_Gather(&x, 1, MPI_INT, y, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Gather(&x, 1, MPI_LONG_LONG, y, 1, MPI_LONG_LONG, 0, MPI_COMM_WORLD);
 #endif
 }
 
 
-void scatter(const int* x, int& y) {
+void scatter(const long long* x, long long& y) {
     if (numpe == 1) {
         y = x[0];
         return;
     }
 #ifdef USE_MPI
-    MPI_Scatter((void*) x, 1, MPI_INT, &y, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Scatter((void*) x, 1, MPI_LONG_LONG, &y, 1, MPI_LONG_LONG, 0, MPI_COMM_WORLD);
 #endif
 }
 
 
 template<typename T>
 void gathervImpl(
-        const T *x, const int numx,
-        T* y, const int* numy) {
+        const T *x, const long long numx,
+        T* y, const long long* numy) {
 
     if (numpe == 1) {
         std::copy(x, x + numx, y);
         return;
     }
 #ifdef USE_MPI
-    const int type_size = sizeof(T);
-    int sendcount = type_size * numx;
+    const long long type_size = sizeof(T);
+    long long sendcount = type_size * numx;
     std::vector<int> recvcount, disp;
     if (mype == 0) {
         recvcount.resize(numpe);
-        for (int pe = 0; pe < numpe; ++pe) {
+        for (long long pe = 0; pe < numpe; ++pe) {
             recvcount[pe] = type_size * numy[pe];
         }
         // exclusive scan isn't available in the standard library,
@@ -155,24 +165,24 @@ void gathervImpl(
 
 template<>
 void gatherv(
-        const double2 *x, const int numx,
-        double2* y, const int* numy) {
+        const double2 *x, const long long numx,
+        double2* y, const long long* numy) {
     gathervImpl(x, numx, y, numy);
 }
 
 
 template<>
 void gatherv(
-        const double *x, const int numx,
-        double* y, const int* numy) {
+        const double *x, const long long numx,
+        double* y, const long long* numy) {
     gathervImpl(x, numx, y, numy);
 }
 
 
 template<>
 void gatherv(
-        const int *x, const int numx,
-        int* y, const int* numy) {
+        const long long *x, const long long numx,
+        long long* y, const long long* numy) {
     gathervImpl(x, numx, y, numy);
 }
 

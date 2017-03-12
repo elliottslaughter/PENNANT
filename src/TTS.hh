@@ -40,8 +40,8 @@ void calcForce(
         const double* smf,
         const double2* ssurfp,
         double2* sf,
-        const int sfirst,
-        const int slast);
+        const long long sfirst,
+        const long long slast);
 
 }; // class TTS
 

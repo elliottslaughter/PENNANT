@@ -34,10 +34,10 @@ QCS::~QCS() {}
 
 void QCS::calcForce(
         double2* sf,
-        const int sfirst,
-        const int slast) {
-    int cfirst = sfirst;
-    int clast = slast;
+        const long long sfirst,
+        const long long slast) {
+    long long cfirst = sfirst;
+    long long clast = slast;
 
     // declare temporary variables
     double* c0area = Memory::alloc<double>(clast - cfirst);
@@ -95,12 +95,12 @@ void QCS::setCornerDiv(
             double* c0evol,
             double* c0du,
             double* c0cos,
-            const int sfirst,
-            const int slast) {
+            const long long sfirst,
+            const long long slast) {
 
     const Mesh* mesh = hydro->mesh;
-    const int nums = mesh->nums;
-    const int numz = mesh->numz;
+    const long long nums = mesh->nums;
+    const long long numz = mesh->numz;
 
     const double2* pu = hydro->pu;
     const double2* px = mesh->pxp;
@@ -109,10 +109,10 @@ void QCS::setCornerDiv(
     const double* elen = mesh->elen;
     const int* znump = mesh->znump;
 
-    int cfirst = sfirst;
-    int clast = slast;
-    int zfirst = mesh->mapsz[sfirst];
-    int zlast = (slast < nums ? mesh->mapsz[slast] : numz);
+    long long cfirst = sfirst;
+    long long clast = slast;
+    long long zfirst = mesh->mapsz[sfirst];
+    long long zlast = (slast < nums ? mesh->mapsz[slast] : numz);
 
     double2* z0uc = Memory::alloc<double2>(zlast - zfirst);
     double2 up0, up1, up2, up3;
@@ -120,34 +120,34 @@ void QCS::setCornerDiv(
 
     // [1] Compute a zone-centered velocity
     fill(&z0uc[0], &z0uc[zlast-zfirst], double2(0., 0.));
-    for (int c = cfirst; c < clast; ++c) {
-        int p = mesh->mapsp1[c];
-        int z = mesh->mapsz[c];
-        int z0 = z - zfirst;
+    for (long long c = cfirst; c < clast; ++c) {
+        long long p = mesh->mapsp1[c];
+        long long z = mesh->mapsz[c];
+        long long z0 = z - zfirst;
         z0uc[z0] += pu[p];
     }
 
-    for (int z = zfirst; z < zlast; ++z) {
-        int z0 = z - zfirst;
+    for (long long z = zfirst; z < zlast; ++z) {
+        long long z0 = z - zfirst;
         z0uc[z0] /= (double) znump[z];
     }
 
     // [2] Divergence at the corner
     #pragma ivdep
-    for (int c = cfirst; c < clast; ++c) {
-        int s2 = c;
-        int s = mesh->mapss3[s2];
+    for (long long c = cfirst; c < clast; ++c) {
+        long long s2 = c;
+        long long s = mesh->mapss3[s2];
         // Associated zone, corner, point
-        int z = mesh->mapsz[s];
-        int z0 = z - zfirst;
-        int c0 = c - cfirst;
-        int p = mesh->mapsp2[s];
+        long long z = mesh->mapsz[s];
+        long long z0 = z - zfirst;
+        long long c0 = c - cfirst;
+        long long p = mesh->mapsp2[s];
         // Points
-        int p1 = mesh->mapsp1[s];
-        int p2 = mesh->mapsp2[s2];
+        long long p1 = mesh->mapsp1[s];
+        long long p2 = mesh->mapsp2[s2];
         // Edges
-        int e1 = mesh->mapse[s];
-        int e2 = mesh->mapse[s2];
+        long long e1 = mesh->mapse[s];
+        long long e2 = mesh->mapse[s2];
 
         // Velocities and positions
         // 0 = point p
@@ -218,8 +218,8 @@ void QCS::setQCnForce(
         const double* c0du,
         const double* c0evol,
         double2* c0qe,
-        const int sfirst,
-        const int slast) {
+        const long long sfirst,
+        const long long slast) {
 
     const Mesh* mesh = hydro->mesh;
 
@@ -228,8 +228,8 @@ void QCS::setQCnForce(
     const double* zss = hydro->zss;
     const double* elen = mesh->elen;
 
-    int cfirst = sfirst;
-    int clast = slast;
+    long long cfirst = sfirst;
+    long long clast = slast;
 
     double* c0rmu = Memory::alloc<double>(clast - cfirst);
 
@@ -237,9 +237,9 @@ void QCS::setQCnForce(
 
     // [4.1] Compute the c0rmu (real Kurapatenko viscous scalar)
     #pragma ivdep
-    for (int c = cfirst; c < clast; ++c) {
-        int c0 = c - cfirst;
-        int z = mesh->mapsz[c];
+    for (long long c = cfirst; c < clast; ++c) {
+        long long c0 = c - cfirst;
+        long long z = mesh->mapsz[c];
 
         // Kurapatenko form of the viscosity
         double ztmp2 = q2 * 0.25 * gammap1 * c0du[c0];
@@ -253,17 +253,17 @@ void QCS::setQCnForce(
 
     // [4.2] Compute the c0qe for each corner
     #pragma ivdep
-    for (int c = cfirst; c < clast; ++c) {
-        int s4 = c;
-        int s = mesh->mapss3[s4];
-        int c0 = c - cfirst;
-        int p = mesh->mapsp2[s];
+    for (long long c = cfirst; c < clast; ++c) {
+        long long s4 = c;
+        long long s = mesh->mapss3[s4];
+        long long c0 = c - cfirst;
+        long long p = mesh->mapsp2[s];
         // Associated point and edge 1
-        int p1 = mesh->mapsp1[s];
-        int e1 = mesh->mapse[s];
+        long long p1 = mesh->mapsp1[s];
+        long long e1 = mesh->mapse[s];
         // Associated point and edge 2
-        int p2 = mesh->mapsp2[s4];
-        int e2 = mesh->mapse[s4];
+        long long p2 = mesh->mapsp2[s4];
+        long long e2 = mesh->mapse[s4];
 
         // Compute: c0qe(1,2,3)=edge 1, y component (2nd), 3rd corner
         //          c0qe(2,1,3)=edge 2, x component (1st)
@@ -282,21 +282,21 @@ void QCS::setForce(
         const double2* c0qe,
         double* c0cos,
         double2* sfq,
-        const int sfirst,
-        const int slast) {
+        const long long sfirst,
+        const long long slast) {
 
     const Mesh* mesh = hydro->mesh;
     const double* elen = mesh->elen;
 
-    int cfirst = sfirst;
-    int clast = slast;
+    long long cfirst = sfirst;
+    long long clast = slast;
 
     double* c0w = Memory::alloc<double>(clast - cfirst);
 
     // [5.1] Preparation of extra variables
     #pragma ivdep
-    for (int c = cfirst; c < clast; ++c) {
-        int c0 = c - cfirst;
+    for (long long c = cfirst; c < clast; ++c) {
+        long long c0 = c - cfirst;
         double csin2 = 1.0 - c0cos[c0] * c0cos[c0];
         c0w[c0]   = ((csin2 < 1.e-4) ? 0. : c0area[c0] / csin2);
         c0cos[c0] = ((csin2 < 1.e-4) ? 0. : c0cos[c0]);
@@ -304,13 +304,13 @@ void QCS::setForce(
 
     // [5.2] Set-Up the forces on corners
     #pragma ivdep
-    for (int s = sfirst; s < slast; ++s) {
+    for (long long s = sfirst; s < slast; ++s) {
         // Associated corners 1 and 2, and edge
-        int c1 = s;
-        int c10 = c1 - cfirst;
-        int c2 = mesh->mapss4[s];
-        int c20 = c2 - cfirst;
-        int e = mesh->mapse[s];
+        long long c1 = s;
+        long long c10 = c1 - cfirst;
+        long long c2 = mesh->mapss4[s];
+        long long c20 = c2 - cfirst;
+        long long e = mesh->mapse[s];
         // Edge length for c1, c2 contribution to s
         double el = elen[e];
 
@@ -326,14 +326,14 @@ void QCS::setForce(
 
 // Routine number [6] in the full algorithm
 void QCS::setVelDiff(
-        const int sfirst,
-        const int slast) {
+        const long long sfirst,
+        const long long slast) {
 
     const Mesh* mesh = hydro->mesh;
-    const int nums = mesh->nums;
-    const int numz = mesh->numz;
-    int zfirst = mesh->mapsz[sfirst];
-    int zlast = (slast < nums ? mesh->mapsz[slast] : numz);
+    const long long nums = mesh->nums;
+    const long long numz = mesh->numz;
+    long long zfirst = mesh->mapsz[sfirst];
+    long long zlast = (slast < nums ? mesh->mapsz[slast] : numz);
     const double2* px = mesh->pxp;
     const double2* pu = hydro->pu;
     const double* zss = hydro->zss;
@@ -343,12 +343,12 @@ void QCS::setVelDiff(
     double* z0tmp = Memory::alloc<double>(zlast - zfirst);
 
     fill(&z0tmp[0], &z0tmp[zlast-zfirst], 0.);
-    for (int s = sfirst; s < slast; ++s) {
-        int p1 = mesh->mapsp1[s];
-        int p2 = mesh->mapsp2[s];
-        int z = mesh->mapsz[s];
-        int e = mesh->mapse[s];
-        int z0 = z - zfirst;
+    for (long long s = sfirst; s < slast; ++s) {
+        long long p1 = mesh->mapsp1[s];
+        long long p2 = mesh->mapsp2[s];
+        long long z = mesh->mapsz[s];
+        long long e = mesh->mapse[s];
+        long long z0 = z - zfirst;
 
         double2 dx = px[p2] - px[p1];
         double2 du = pu[p2] - pu[p1];
@@ -359,8 +359,8 @@ void QCS::setVelDiff(
         z0tmp[z0] = max(z0tmp[z0], dux);
     }
 
-    for (int z = zfirst; z < zlast; ++z) {
-        int z0 = z - zfirst;
+    for (long long z = zfirst; z < zlast; ++z) {
+        long long z0 = z - zfirst;
         zdu[z] = q1 * zss[z] + 2. * q2 * z0tmp[z0];
     }
 

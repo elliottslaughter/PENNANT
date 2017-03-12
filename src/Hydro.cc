@@ -50,9 +50,9 @@ Hydro::Hydro(const InputFile* inp, Mesh* m) : mesh(m) {
 
     const double2 vfixx = double2(1., 0.);
     const double2 vfixy = double2(0., 1.);
-    for (int i = 0; i < bcx.size(); ++i)
+    for (long long i = 0; i < bcx.size(); ++i)
         bcs.push_back(new HydroBC(mesh, vfixx, mesh->getXPlane(bcx[i])));
-    for (int i = 0; i < bcy.size(); ++i)
+    for (long long i = 0; i < bcy.size(); ++i)
         bcs.push_back(new HydroBC(mesh, vfixy, mesh->getYPlane(bcy[i])));
 
     init();
@@ -63,7 +63,7 @@ Hydro::~Hydro() {
 
     delete tts;
     delete qcs;
-    for (int i = 0; i < bcs.size(); ++i) {
+    for (long long i = 0; i < bcs.size(); ++i) {
         delete bcs[i];
     }
 }
@@ -71,11 +71,11 @@ Hydro::~Hydro() {
 
 void Hydro::init() {
 
-    const int numpch = mesh->numpch;
-    const int numzch = mesh->numzch;
-    const int nump = mesh->nump;
-    const int numz = mesh->numz;
-    const int nums = mesh->nums;
+    const long long numpch = mesh->numpch;
+    const long long numzch = mesh->numzch;
+    const long long nump = mesh->nump;
+    const long long numz = mesh->numz;
+    const long long nums = mesh->nums;
 
     const double2* zx = mesh->zx;
     const double* zvol = mesh->zvol;
@@ -104,9 +104,9 @@ void Hydro::init() {
 
     // initialize hydro vars
     #pragma omp parallel for schedule(static)
-    for (int zch = 0; zch < numzch; ++zch) {
-        int zfirst = mesh->zchzfirst[zch];
-        int zlast = mesh->zchzlast[zch];
+    for (long long zch = 0; zch < numzch; ++zch) {
+        long long zfirst = mesh->zchzfirst[zch];
+        long long zlast = mesh->zchzlast[zch];
 
         fill(&zr[zfirst], &zr[zlast], rinit);
         fill(&ze[zfirst], &ze[zlast], einit);
@@ -116,7 +116,7 @@ void Hydro::init() {
         if (!subrgn.empty()) {
             const double eps = 1.e-12;
             #pragma ivdep
-            for (int z = zfirst; z < zlast; ++z) {
+            for (long long z = zfirst; z < zlast; ++z) {
                 if (zx[z].x > (subrgn[0] - eps) &&
                     zx[z].x < (subrgn[1] + eps) &&
                     zx[z].y > (subrgn[2] - eps) &&
@@ -128,16 +128,16 @@ void Hydro::init() {
         }
 
         #pragma ivdep
-        for (int z = zfirst; z < zlast; ++z) {
+        for (long long z = zfirst; z < zlast; ++z) {
             zm[z] = zr[z] * zvol[z];
             zetot[z] = ze[z] * zm[z];
         }
     }  // for sch
 
     #pragma omp parallel for schedule(static)
-    for (int pch = 0; pch < numpch; ++pch) {
-        int pfirst = mesh->pchpfirst[pch];
-        int plast = mesh->pchplast[pch];
+    for (long long pch = 0; pch < numpch; ++pch) {
+        long long pfirst = mesh->pchpfirst[pch];
+        long long plast = mesh->pchplast[pch];
         if (uinitradial != 0.)
             initRadialVel(uinitradial, pfirst, plast);
         else
@@ -151,13 +151,13 @@ void Hydro::init() {
 
 void Hydro::initRadialVel(
         const double vel,
-        const int pfirst,
-        const int plast) {
+        const long long pfirst,
+        const long long plast) {
     const double2* px = mesh->px;
     const double eps = 1.e-12;
 
     #pragma ivdep
-    for (int p = pfirst; p < plast; ++p) {
+    for (long long p = pfirst; p < plast; ++p) {
         double pmag = length(px[p]);
         if (pmag > eps)
             pu[p] = vel * px[p] / pmag;
@@ -170,8 +170,8 @@ void Hydro::initRadialVel(
 void Hydro::doCycle(
             const double dt) {
 
-    const int numpch = mesh->numpch;
-    const int numsch = mesh->numsch;
+    const long long numpch = mesh->numpch;
+    const long long numsch = mesh->numsch;
     double2* px = mesh->px;
     double2* ex = mesh->ex;
     double2* zx = mesh->zx;
@@ -195,9 +195,9 @@ void Hydro::doCycle(
 
     // Begin hydro cycle
     #pragma omp parallel for schedule(static)
-    for (int pch = 0; pch < numpch; ++pch) {
-        int pfirst = mesh->pchpfirst[pch];
-        int plast = mesh->pchplast[pch];
+    for (long long pch = 0; pch < numpch; ++pch) {
+        long long pfirst = mesh->pchpfirst[pch];
+        long long plast = mesh->pchplast[pch];
 
         // save off point variable values from previous cycle
         copy(&px[pfirst], &px[plast], &px0[pfirst]);
@@ -209,11 +209,11 @@ void Hydro::doCycle(
     } // for pch
 
     #pragma omp parallel for schedule(static)
-    for (int sch = 0; sch < numsch; ++sch) {
-        int sfirst = mesh->schsfirst[sch];
-        int slast = mesh->schslast[sch];
-        int zfirst = mesh->schzfirst[sch];
-        int zlast = mesh->schzlast[sch];
+    for (long long sch = 0; sch < numsch; ++sch) {
+        long long sfirst = mesh->schsfirst[sch];
+        long long slast = mesh->schslast[sch];
+        long long zfirst = mesh->schzfirst[sch];
+        long long zlast = mesh->schzlast[sch];
 
         // save off zone variable values from previous cycle
         copy(&zvol[zfirst], &zvol[zlast], &zvol0[zfirst]);
@@ -248,14 +248,14 @@ void Hydro::doCycle(
     mesh->sumToPoints(cftot, pf);
 
     #pragma omp parallel for schedule(static)
-    for (int pch = 0; pch < numpch; ++pch) {
-        int pfirst = mesh->pchpfirst[pch];
-        int plast = mesh->pchplast[pch];
+    for (long long pch = 0; pch < numpch; ++pch) {
+        long long pfirst = mesh->pchpfirst[pch];
+        long long plast = mesh->pchplast[pch];
 
         // 4a. apply boundary conditions
-        for (int i = 0; i < bcs.size(); ++i) {
-            int bfirst = bcs[i]->pchbfirst[pch];
-            int blast = bcs[i]->pchblast[pch];
+        for (long long i = 0; i < bcs.size(); ++i) {
+            long long bfirst = bcs[i]->pchbfirst[pch];
+            long long blast = bcs[i]->pchblast[pch];
             bcs[i]->applyFixedBC(pu0, pf, bfirst, blast);
         }
 
@@ -270,11 +270,11 @@ void Hydro::doCycle(
     resetDtHydro();
 
     #pragma omp parallel for schedule(static)
-    for (int sch = 0; sch < numsch; ++sch) {
-        int sfirst = mesh->schsfirst[sch];
-        int slast = mesh->schslast[sch];
-        int zfirst = mesh->schzfirst[sch];
-        int zlast = mesh->schzlast[sch];
+    for (long long sch = 0; sch < numsch; ++sch) {
+        long long sfirst = mesh->schsfirst[sch];
+        long long slast = mesh->schslast[sch];
+        long long zfirst = mesh->schzfirst[sch];
+        long long zlast = mesh->schzlast[sch];
 
         // 6a. compute new mesh geometry
         mesh->calcCtrs(px, ex, zx, sfirst, slast);
@@ -289,9 +289,9 @@ void Hydro::doCycle(
     mesh->checkBadSides();
 
     #pragma omp parallel for schedule(static)
-    for (int zch = 0; zch < mesh->numzch; ++zch) {
-        int zfirst = mesh->zchzfirst[zch];
-        int zlast = mesh->zchzlast[zch];
+    for (long long zch = 0; zch < mesh->numzch; ++zch) {
+        long long zfirst = mesh->zchzfirst[zch];
+        long long zlast = mesh->zchzlast[zch];
 
         // 7a. compute work rate
         calcWorkRate(zvol0, zvol, zw, zp, dt, zwrate, zfirst, zlast);
@@ -312,13 +312,13 @@ void Hydro::advPosHalf(
         const double2* pu0,
         const double dt,
         double2* pxp,
-        const int pfirst,
-        const int plast) {
+        const long long pfirst,
+        const long long plast) {
 
     double dth = 0.5 * dt;
 
     #pragma ivdep
-    for (int p = pfirst; p < plast; ++p) {
+    for (long long p = pfirst; p < plast; ++p) {
         pxp[p] = px0[p] + pu0[p] * dth;
     }
 }
@@ -331,11 +331,11 @@ void Hydro::advPosFull(
         const double dt,
         double2* px,
         double2* pu,
-        const int pfirst,
-        const int plast) {
+        const long long pfirst,
+        const long long plast) {
 
     #pragma ivdep
-    for (int p = pfirst; p < plast; ++p) {
+    for (long long p = pfirst; p < plast; ++p) {
         pu[p] = pu0[p] + pa[p] * dt;
         px[p] = px0[p] + 0.5 * (pu[p] + pu0[p]) * dt;
     }
@@ -348,13 +348,13 @@ void Hydro::calcCrnrMass(
         const double* zarea,
         const double* smf,
         double* cmaswt,
-        const int sfirst,
-        const int slast) {
+        const long long sfirst,
+        const long long slast) {
 
     #pragma ivdep
-    for (int s = sfirst; s < slast; ++s) {
-        int s3 = mesh->mapss3[s];
-        int z = mesh->mapsz[s];
+    for (long long s = sfirst; s < slast; ++s) {
+        long long s3 = mesh->mapss3[s];
+        long long z = mesh->mapsz[s];
 
         double m = zr[z] * zarea[z] * 0.5 * (smf[s] + smf[s3]);
         cmaswt[s] = m;
@@ -367,12 +367,12 @@ void Hydro::sumCrnrForce(
         const double2* sf2,
         const double2* sf3,
         double2* cftot,
-        const int sfirst,
-        const int slast) {
+        const long long sfirst,
+        const long long slast) {
 
     #pragma ivdep
-    for (int s = sfirst; s < slast; ++s) {
-        int s3 = mesh->mapss3[s];
+    for (long long s = sfirst; s < slast; ++s) {
+        long long s3 = mesh->mapss3[s];
 
         double2 f = (sf[s] + sf2[s] + sf3[s]) -
                     (sf[s3] + sf2[s3] + sf3[s3]);
@@ -385,13 +385,13 @@ void Hydro::calcAccel(
         const double2* pf,
         const double* pmass,
         double2* pa,
-        const int pfirst,
-        const int plast) {
+        const long long pfirst,
+        const long long plast) {
 
     const double fuzz = 1.e-99;
 
     #pragma ivdep
-    for (int p = pfirst; p < plast; ++p) {
+    for (long long p = pfirst; p < plast; ++p) {
         pa[p] = pf[p] / max(pmass[p], fuzz);
     }
 
@@ -402,11 +402,11 @@ void Hydro::calcRho(
         const double* zm,
         const double* zvol,
         double* zr,
-        const int zfirst,
-        const int zlast) {
+        const long long zfirst,
+        const long long zlast) {
 
     #pragma ivdep
-    for (int z = zfirst; z < zlast; ++z) {
+    for (long long z = zfirst; z < zlast; ++z) {
         zr[z] = zm[z] / zvol[z];
     }
 
@@ -422,8 +422,8 @@ void Hydro::calcWork(
         const double dt,
         double* zw,
         double* zetot,
-        const int sfirst,
-        const int slast) {
+        const long long sfirst,
+        const long long slast) {
 
     // Compute the work done by finding, for each element/node pair,
     //   dwork= force * vavg
@@ -432,10 +432,10 @@ void Hydro::calcWork(
 
     const double dth = 0.5 * dt;
 
-    for (int s = sfirst; s < slast; ++s) {
-        int p1 = mesh->mapsp1[s];
-        int p2 = mesh->mapsp2[s];
-        int z = mesh->mapsz[s];
+    for (long long s = sfirst; s < slast; ++s) {
+        long long p1 = mesh->mapsp1[s];
+        long long p2 = mesh->mapsp2[s];
+        long long z = mesh->mapsz[s];
 
         double2 sftot = sf[s] + sf2[s];
         double sd1 = dot( sftot, (pu0[p1] + pu[p1]));
@@ -457,11 +457,11 @@ void Hydro::calcWorkRate(
         const double* zp,
         const double dt,
         double* zwrate,
-        const int zfirst,
-        const int zlast) {
+        const long long zfirst,
+        const long long zlast) {
     double dtinv = 1. / dt;
     #pragma ivdep
-    for (int z = zfirst; z < zlast; ++z) {
+    for (long long z = zfirst; z < zlast; ++z) {
         double dvol = zvol[z] - zvol0[z];
         zwrate[z] = (zw[z] + zp[z] * dvol) * dtinv;
     }
@@ -473,12 +473,12 @@ void Hydro::calcEnergy(
         const double* zetot,
         const double* zm,
         double* ze,
-        const int zfirst,
-        const int zlast) {
+        const long long zfirst,
+        const long long zlast) {
 
     const double fuzz = 1.e-99;
     #pragma ivdep
-    for (int z = zfirst; z < zlast; ++z) {
+    for (long long z = zfirst; z < zlast; ++z) {
         ze[z] = zetot[z] / (zm[z] + fuzz);
     }
 
@@ -495,14 +495,14 @@ void Hydro::sumEnergy(
         const double2* pu,
         double& ei,
         double& ek,
-        const int zfirst,
-        const int zlast,
-        const int sfirst,
-        const int slast) {
+        const long long zfirst,
+        const long long zlast,
+        const long long sfirst,
+        const long long slast) {
 
     // compute internal energy
     double sumi = 0.; 
-    for (int z = zfirst; z < zlast; ++z) {
+    for (long long z = zfirst; z < zlast; ++z) {
         sumi += zetot[z];
     }
     // multiply by 2\pi for cylindrical geometry
@@ -514,10 +514,10 @@ void Hydro::sumEnergy(
     //         = zm sum(c in z) [cvol / zvol * .5 * u ^ 2]
     //         = sum(c in z) [zm * cvol / zvol * .5 * u ^ 2]
     double sumk = 0.; 
-    for (int s = sfirst; s < slast; ++s) {
-        int s3 = mesh->mapss3[s];
-        int p1 = mesh->mapsp1[s];
-        int z = mesh->mapsz[s];
+    for (long long s = sfirst; s < slast; ++s) {
+        long long s3 = mesh->mapss3[s];
+        long long p1 = mesh->mapsp1[s];
+        long long z = mesh->mapsz[s];
 
         double cvol = zarea[z] * px[p1].x * 0.5 * (smf[s] + smf[s3]);
         double cke = zm[z] * cvol / zvol[z] * 0.5 * length2(pu[p1]);
@@ -533,13 +533,13 @@ void Hydro::calcDtCourant(
         const double* zdl,
         double& dtrec,
         char* msgdtrec,
-        const int zfirst,
-        const int zlast) {
+        const long long zfirst,
+        const long long zlast) {
 
     const double fuzz = 1.e-99;
     double dtnew = 1.e99;
-    int zmin = -1;
-    for (int z = zfirst; z < zlast; ++z) {
+    long long zmin = -1;
+    for (long long z = zfirst; z < zlast; ++z) {
         double cdu = max(zdu[z], max(zss[z], fuzz));
         double zdthyd = zdl[z] * cfl / cdu;
         zmin = (zdthyd < dtnew ? z : zmin);
@@ -548,7 +548,7 @@ void Hydro::calcDtCourant(
 
     if (dtnew < dtrec) {
         dtrec = dtnew;
-        snprintf(msgdtrec, 80, "Hydro Courant limit for z = %d", zmin);
+        snprintf(msgdtrec, 80, "Hydro Courant limit for z = %lld", zmin);
     }
 
 }
@@ -560,12 +560,12 @@ void Hydro::calcDtVolume(
         const double dtlast,
         double& dtrec,
         char* msgdtrec,
-        const int zfirst,
-        const int zlast) {
+        const long long zfirst,
+        const long long zlast) {
 
     double dvovmax = 1.e-99;
-    int zmax = -1;
-    for (int z = zfirst; z < zlast; ++z) {
+    long long zmax = -1;
+    for (long long z = zfirst; z < zlast; ++z) {
         double zdvov = abs((zvol[z] - zvol0[z]) / zvol0[z]);
         zmax = (zdvov > dvovmax ? z : zmax);
         dvovmax = (zdvov > dvovmax ? zdvov : dvovmax);
@@ -573,7 +573,7 @@ void Hydro::calcDtVolume(
     double dtnew = dtlast * cflv / dvovmax;
     if (dtnew < dtrec) {
         dtrec = dtnew;
-        snprintf(msgdtrec, 80, "Hydro dV/V limit for z = %d", zmax);
+        snprintf(msgdtrec, 80, "Hydro dV/V limit for z = %lld", zmax);
     }
 
 }
@@ -584,8 +584,8 @@ void Hydro::calcDtHydro(
         const double* zvol,
         const double* zvol0,
         const double dtlast,
-        const int zfirst,
-        const int zlast) {
+        const long long zfirst,
+        const long long zlast) {
 
     double dtchunk = 1.e99;
     char msgdtchunk[80];
@@ -634,11 +634,11 @@ void Hydro::writeEnergyCheck() {
     double ei = 0.;
     double ek = 0.;
     #pragma omp parallel for schedule(static)
-    for (int sch = 0; sch < mesh->numsch; ++sch) {
-        int sfirst = mesh->schsfirst[sch];
-        int slast = mesh->schslast[sch];
-        int zfirst = mesh->schzfirst[sch];
-        int zlast = mesh->schzlast[sch];
+    for (long long sch = 0; sch < mesh->numsch; ++sch) {
+        long long sfirst = mesh->schsfirst[sch];
+        long long slast = mesh->schslast[sch];
+        long long zfirst = mesh->schzfirst[sch];
+        long long zlast = mesh->schzlast[sch];
 
         double eichunk = 0.;
         double ekchunk = 0.;

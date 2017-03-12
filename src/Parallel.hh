@@ -37,21 +37,22 @@ namespace Parallel {
                                 // find minimum over all PEs, and
                                 // report which PE had the minimum
     void globalSum(int& x);     // find sum over all PEs - overloaded
+    void globalSum(long long& x);
     void globalSum(int64_t& x);
     void globalSum(double& x);
-    void gather(const int x, int* y);
-                                // gather list of ints from all PEs
-    void scatter(const int* x, int& y);
-                                // gather list of ints from all PEs
+    void gather(const long long x, long long* y);
+                                // gather list of long longs from all PEs
+    void scatter(const long long* x, long long& y);
+                                // gather list of long longs from all PEs
 
     template<typename T>
     void gatherv(               // gather variable-length list
-            const T *x, const int numx,
-            T* y, const int* numy);
+            const T *x, const long long numx,
+            T* y, const long long* numy);
     template<typename T>
     void gathervImpl(           // helper function for gatherv
-            const T *x, const int numx,
-            T* y, const int* numy);
+            const T *x, const long long numx,
+            T* y, const long long* numy);
 
 }  // namespace Parallel
 

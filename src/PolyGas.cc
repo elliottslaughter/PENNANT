@@ -37,8 +37,8 @@ void PolyGas::calcStateAtHalf(
         const double dt,
         double* zp,
         double* zss,
-        const int zfirst,
-        const int zlast) {
+        const long long zfirst,
+        const long long zlast) {
 
     double* z0per = Memory::alloc<double>(zlast - zfirst);
 
@@ -49,8 +49,8 @@ void PolyGas::calcStateAtHalf(
 
     // now advance pressure to the half-step
     #pragma ivdep
-    for (int z = zfirst; z < zlast; ++z) {
-        int z0 = z - zfirst;
+    for (long long z = zfirst; z < zlast; ++z) {
+        long long z0 = z - zfirst;
         double zminv = 1. / zm[z];
         double dv = (zvolp[z] - zvol0[z]) * zminv;
         double bulk = zr0[z] * zss[z] * zss[z];
@@ -69,15 +69,15 @@ void PolyGas::calcEOS(
         double* zp,
         double* z0per,
         double* zss,
-        const int zfirst,
-        const int zlast) {
+        const long long zfirst,
+        const long long zlast) {
 
     const double gm1 = gamma - 1.;
     const double ss2 = max(ssmin * ssmin, 1.e-99);
 
     #pragma ivdep
-    for (int z = zfirst; z < zlast; ++z) {
-        int z0 = z - zfirst;
+    for (long long z = zfirst; z < zlast; ++z) {
+        long long z0 = z - zfirst;
         double rx = zr[z];
         double ex = max(ze[z], 0.0);
         double px = gm1 * rx * ex;
@@ -96,14 +96,14 @@ void PolyGas::calcForce(
         const double* zp,
         const double2* ssurfp,
         double2* sf,
-        const int sfirst,
-        const int slast) {
+        const long long sfirst,
+        const long long slast) {
 
     const Mesh* mesh = hydro->mesh;
 
     #pragma ivdep
-    for (int s = sfirst; s < slast; ++s) {
-        int z = mesh->mapsz[s];
+    for (long long s = sfirst; s < slast; ++s) {
+        long long z = mesh->mapsz[s];
         double2 sfx = -zp[z] * ssurfp[s];
         sf[s] = sfx;
 

@@ -69,9 +69,9 @@ void Mesh::init() {
 
     // generate mesh
     vector<double2> nodepos;
-    vector<int> cellstart, cellsize, cellnodes;
-    vector<int> slavemstrpes, slavemstrcounts, slavepoints;
-    vector<int> masterslvpes, masterslvcounts, masterpoints;
+    vector<long long> cellstart, cellsize, cellnodes;
+    vector<long long> slavemstrpes, slavemstrcounts, slavepoints;
+    vector<long long> masterslvpes, masterslvcounts, masterpoints;
     gmesh->generate(nodepos, cellstart, cellsize, cellnodes,
             slavemstrpes, slavemstrcounts, slavepoints,
             masterslvpes, masterslvcounts, masterpoints);
@@ -139,20 +139,20 @@ void Mesh::init() {
 
     // do a few initial calculations
     #pragma omp parallel for schedule(static)
-    for (int pch = 0; pch < numpch; ++pch) {
-        int pfirst = pchpfirst[pch];
-        int plast = pchplast[pch];
+    for (long long pch = 0; pch < numpch; ++pch) {
+        long long pfirst = pchpfirst[pch];
+        long long plast = pchplast[pch];
         // copy nodepos into px, distributed across threads
-        for (int p = pfirst; p < plast; ++p)
+        for (long long p = pfirst; p < plast; ++p)
             px[p] = nodepos[p];
 
     }
 
     numsbad = 0;
     #pragma omp parallel for schedule(static)
-    for (int sch = 0; sch < numsch; ++sch) {
-        int sfirst = schsfirst[sch];
-        int slast = schslast[sch];
+    for (long long sch = 0; sch < numsch; ++sch) {
+        long long sfirst = schsfirst[sch];
+        long long slast = schslast[sch];
         calcCtrs(px, ex, zx, sfirst, slast);
         calcVols(px, zx, sarea, svol, zarea, zvol, sfirst, slast);
         calcSideFracs(sarea, zarea, smf, sfirst, slast);
@@ -163,23 +163,23 @@ void Mesh::init() {
 
 
 void Mesh::initSides(
-        const vector<int>& cellstart,
-        const vector<int>& cellsize,
-        const vector<int>& cellnodes) {
+        const vector<long long>& cellstart,
+        const vector<long long>& cellsize,
+        const vector<long long>& cellnodes) {
 
-    mapsp1 = Memory::alloc<int>(nums);
-    mapsp2 = Memory::alloc<int>(nums);
-    mapsz  = Memory::alloc<int>(nums);
-    mapss3 = Memory::alloc<int>(nums);
-    mapss4 = Memory::alloc<int>(nums);
+    mapsp1 = Memory::alloc<long long>(nums);
+    mapsp2 = Memory::alloc<long long>(nums);
+    mapsz  = Memory::alloc<long long>(nums);
+    mapss3 = Memory::alloc<long long>(nums);
+    mapss4 = Memory::alloc<long long>(nums);
 
-    for (int z = 0; z < numz; ++z) {
-        int sbase = cellstart[z];
-        int size = cellsize[z];
-        for (int n = 0; n < size; ++n) {
-            int s = sbase + n;
-            int snext = sbase + (n + 1 == size ? 0 : n + 1);
-            int slast = sbase + (n == 0 ? size : n) - 1;
+    for (long long z = 0; z < numz; ++z) {
+        long long sbase = cellstart[z];
+        long long size = cellsize[z];
+        for (long long n = 0; n < size; ++n) {
+            long long s = sbase + n;
+            long long snext = sbase + (n + 1 == size ? 0 : n + 1);
+            long long slast = sbase + (n == 0 ? size : n) - 1;
             mapsz[s] = z;
             mapsp1[s] = cellnodes[s];
             mapsp2[s] = cellnodes[snext];
@@ -193,18 +193,18 @@ void Mesh::initSides(
 
 void Mesh::initEdges() {
 
-    vector<vector<int> > edgepp(nump), edgepe(nump);
+    vector<vector<long long> > edgepp(nump), edgepe(nump);
 
-    mapse = Memory::alloc<int>(nums);
+    mapse = Memory::alloc<long long>(nums);
 
-    int e = 0;
-    for (int s = 0; s < nums; ++s) {
-        int p1 = min(mapsp1[s], mapsp2[s]);
-        int p2 = max(mapsp1[s], mapsp2[s]);
+    long long e = 0;
+    for (long long s = 0; s < nums; ++s) {
+        long long p1 = min(mapsp1[s], mapsp2[s]);
+        long long p2 = max(mapsp1[s], mapsp2[s]);
 
-        vector<int>& vpp = edgepp[p1];
-        vector<int>& vpe = edgepe[p1];
-        int i = find(vpp.begin(), vpp.end(), p2) - vpp.begin();
+        vector<long long>& vpp = edgepp[p1];
+        vector<long long>& vpe = edgepe[p1];
+        long long i = find(vpp.begin(), vpp.end(), p2) - vpp.begin();
         if (i == vpp.size()) {
             // (p, p2) isn't in the edge list - add it
             vpp.push_back(p2);
@@ -227,7 +227,7 @@ void Mesh::initChunks() {
     // use 'chunksize' for maximum chunksize; decrease as needed
     // to ensure that no zone has its sides split across chunk
     // boundaries
-    int s1, s2 = 0;
+    long long s1, s2 = 0;
     while (s2 < nums) {
         s1 = s2;
         s2 = min(s2 + chunksize, nums);
@@ -241,7 +241,7 @@ void Mesh::initChunks() {
     numsch = schsfirst.size();
 
     // compute point chunks
-    int p1, p2 = 0;
+    long long p1, p2 = 0;
     while (p2 < nump) {
         p1 = p2;
         p2 = min(p2 + chunksize, nump);
@@ -251,7 +251,7 @@ void Mesh::initChunks() {
     numpch = pchpfirst.size();
 
     // compute zone chunks
-    int z1, z2 = 0;
+    long long z1, z2 = 0;
     while (z2 < numz) {
         z1 = z2;
         z2 = min(z2 + chunksize, numz);
@@ -264,19 +264,19 @@ void Mesh::initChunks() {
 
 
 void Mesh::initInvMap() {
-    mappcfirst = Memory::alloc<int>(nump);
-    mapccnext = Memory::alloc<int>(nums);
+    mappcfirst = Memory::alloc<long long>(nump);
+    mapccnext = Memory::alloc<long long>(nums);
 
-    vector<pair<int, int> > pcpair(nums);
-    for (int c = 0; c < numc; ++c)
+    vector<pair<long long, long long> > pcpair(nums);
+    for (long long c = 0; c < numc; ++c)
         pcpair[c] = make_pair(mapsp1[c], c);
     sort(pcpair.begin(), pcpair.end());
-    for (int i = 0; i < numc; ++i) {
-        int p = pcpair[i].first;
-        int pp = pcpair[i+1].first;
-        int pm = pcpair[i-1].first;
-        int c = pcpair[i].second;
-        int cp = pcpair[i+1].second;
+    for (long long i = 0; i < numc; ++i) {
+        long long p = pcpair[i].first;
+        long long pp = pcpair[i+1].first;
+        long long pm = pcpair[i-1].first;
+        long long c = pcpair[i].second;
+        long long cp = pcpair[i+1].second;
 
         if (i == 0 || p != pm)  mappcfirst[p] = c;
         if (i+1 == numc || p != pp)
@@ -289,42 +289,42 @@ void Mesh::initInvMap() {
 
 
 void Mesh::initParallel(
-        const vector<int>& slavemstrpes,
-        const vector<int>& slavemstrcounts,
-        const vector<int>& slavepoints,
-        const vector<int>& masterslvpes,
-        const vector<int>& masterslvcounts,
-        const vector<int>& masterpoints) {
+        const vector<long long>& slavemstrpes,
+        const vector<long long>& slavemstrcounts,
+        const vector<long long>& slavepoints,
+        const vector<long long>& masterslvpes,
+        const vector<long long>& masterslvcounts,
+        const vector<long long>& masterpoints) {
     if (Parallel::numpe == 1) return;
 
     nummstrpe = slavemstrpes.size();
-    mapmstrpepe = Memory::alloc<int>(nummstrpe);
+    mapmstrpepe = Memory::alloc<long long>(nummstrpe);
     copy(slavemstrpes.begin(), slavemstrpes.end(), mapmstrpepe);
-    mstrpenumslv = Memory::alloc<int>(nummstrpe);
+    mstrpenumslv = Memory::alloc<long long>(nummstrpe);
     copy(slavemstrcounts.begin(), slavemstrcounts.end(), mstrpenumslv);
-    mapmstrpeslv1 = Memory::alloc<int>(nummstrpe);
-    int count = 0;
-    for (int mstrpe = 0; mstrpe < nummstrpe; ++mstrpe) {
+    mapmstrpeslv1 = Memory::alloc<long long>(nummstrpe);
+    long long count = 0;
+    for (long long mstrpe = 0; mstrpe < nummstrpe; ++mstrpe) {
         mapmstrpeslv1[mstrpe] = count;
         count += mstrpenumslv[mstrpe];
     }
     numslv = slavepoints.size();
-    mapslvp = Memory::alloc<int>(numslv);
+    mapslvp = Memory::alloc<long long>(numslv);
     copy(slavepoints.begin(), slavepoints.end(), mapslvp);
 
     numslvpe = masterslvpes.size();
-    mapslvpepe = Memory::alloc<int>(numslvpe);
+    mapslvpepe = Memory::alloc<long long>(numslvpe);
     copy(masterslvpes.begin(), masterslvpes.end(), mapslvpepe);
-    slvpenumprx = Memory::alloc<int>(numslvpe);
+    slvpenumprx = Memory::alloc<long long>(numslvpe);
     copy(masterslvcounts.begin(), masterslvcounts.end(), slvpenumprx);
-    mapslvpeprx1 = Memory::alloc<int>(numslvpe);
+    mapslvpeprx1 = Memory::alloc<long long>(numslvpe);
     count = 0;
-    for (int slvpe = 0; slvpe < numslvpe; ++slvpe) {
+    for (long long slvpe = 0; slvpe < numslvpe; ++slvpe) {
         mapslvpeprx1[slvpe] = count;
         count += slvpenumprx[slvpe];
     }
     numprx = masterpoints.size();
-    mapprxp = Memory::alloc<int>(numprx);
+    mapprxp = Memory::alloc<long long>(numprx);
     copy(masterpoints.begin(), masterpoints.end(), mapprxp);
 
 }
@@ -339,9 +339,9 @@ void Mesh::writeStats() {
     int64_t gnumz = numz;
     int64_t gnums = nums;
     int64_t gnume = nume;
-    int gnumpch = numpch;
-    int gnumzch = numzch;
-    int gnumsch = numsch;
+    long long gnumpch = numpch;
+    long long gnumzch = numzch;
+    long long gnumsch = numsch;
 
     Parallel::globalSum(gnump);
     Parallel::globalSum(gnumz);
@@ -389,12 +389,12 @@ void Mesh::write(
 }
 
 
-vector<int> Mesh::getXPlane(const double c) {
+vector<long long> Mesh::getXPlane(const double c) {
 
-    vector<int> mapbp;
+    vector<long long> mapbp;
     const double eps = 1.e-12;
 
-    for (int p = 0; p < nump; ++p) {
+    for (long long p = 0; p < nump; ++p) {
         if (fabs(px[p].x - c) < eps) {
             mapbp.push_back(p);
         }
@@ -404,12 +404,12 @@ vector<int> Mesh::getXPlane(const double c) {
 }
 
 
-vector<int> Mesh::getYPlane(const double c) {
+vector<long long> Mesh::getYPlane(const double c) {
 
-    vector<int> mapbp;
+    vector<long long> mapbp;
     const double eps = 1.e-12;
 
-    for (int p = 0; p < nump; ++p) {
+    for (long long p = 0; p < nump; ++p) {
         if (fabs(px[p].y - c) < eps) {
             mapbp.push_back(p);
         }
@@ -420,19 +420,19 @@ vector<int> Mesh::getYPlane(const double c) {
 
 
 void Mesh::getPlaneChunks(
-        const int numb,
-        const int* mapbp,
-        vector<int>& pchbfirst,
-        vector<int>& pchblast) {
+        const long long numb,
+        const long long* mapbp,
+        vector<long long>& pchbfirst,
+        vector<long long>& pchblast) {
 
     pchbfirst.resize(0);
     pchblast.resize(0);
 
     // compute boundary point chunks
     // (boundary points contained in each point chunk)
-    int bf, bl = 0;
-    for (int pch = 0; pch < numpch; ++pch) {
-         int pl = pchplast[pch];
+    long long bf, bl = 0;
+    for (long long pch = 0; pch < numpch; ++pch) {
+         long long pl = pchplast[pch];
          bf = bl;
          bl = lower_bound(&mapbp[bf], &mapbp[numb], pl) - &mapbp[0];
          pchbfirst.push_back(bf);
@@ -446,23 +446,23 @@ void Mesh::calcCtrs(
         const double2* px,
         double2* ex,
         double2* zx,
-        const int sfirst,
-        const int slast) {
+        const long long sfirst,
+        const long long slast) {
 
-    int zfirst = mapsz[sfirst];
-    int zlast = (slast < nums ? mapsz[slast] : numz);
+    long long zfirst = mapsz[sfirst];
+    long long zlast = (slast < nums ? mapsz[slast] : numz);
     fill(&zx[zfirst], &zx[zlast], double2(0., 0.));
 
-    for (int s = sfirst; s < slast; ++s) {
-        int p1 = mapsp1[s];
-        int p2 = mapsp2[s];
-        int e = mapse[s];
-        int z = mapsz[s];
+    for (long long s = sfirst; s < slast; ++s) {
+        long long p1 = mapsp1[s];
+        long long p2 = mapsp2[s];
+        long long e = mapse[s];
+        long long z = mapsz[s];
         ex[e] = 0.5 * (px[p1] + px[p2]);
         zx[z] += px[p1];
     }
 
-    for (int z = zfirst; z < zlast; ++z) {
+    for (long long z = zfirst; z < zlast; ++z) {
         zx[z] /= (double) znump[z];
     }
 
@@ -476,20 +476,20 @@ void Mesh::calcVols(
         double* svol,
         double* zarea,
         double* zvol,
-        const int sfirst,
-        const int slast) {
+        const long long sfirst,
+        const long long slast) {
 
-    int zfirst = mapsz[sfirst];
-    int zlast = (slast < nums ? mapsz[slast] : numz);
+    long long zfirst = mapsz[sfirst];
+    long long zlast = (slast < nums ? mapsz[slast] : numz);
     fill(&zvol[zfirst], &zvol[zlast], 0.);
     fill(&zarea[zfirst], &zarea[zlast], 0.);
 
     const double third = 1. / 3.;
-    int count = 0;
-    for (int s = sfirst; s < slast; ++s) {
-        int p1 = mapsp1[s];
-        int p2 = mapsp2[s];
-        int z = mapsz[s];
+    long long count = 0;
+    for (long long s = sfirst; s < slast; ++s) {
+        long long p1 = mapsp1[s];
+        long long p2 = mapsp2[s];
+        long long z = mapsz[s];
 
         // compute side volumes, sum to zone
         double sa = 0.5 * cross(px[p2] - px[p1], zx[z] - px[p1]);
@@ -528,12 +528,12 @@ void Mesh::calcSideFracs(
         const double* sarea,
         const double* zarea,
         double* smf,
-        const int sfirst,
-        const int slast) {
+        const long long sfirst,
+        const long long slast) {
 
     #pragma ivdep
-    for (int s = sfirst; s < slast; ++s) {
-        int z = mapsz[s];
+    for (long long s = sfirst; s < slast; ++s) {
+        long long z = mapsz[s];
         smf[s] = sarea[s] / zarea[z];
     }
 }
@@ -543,13 +543,13 @@ void Mesh::calcSurfVecs(
         const double2* zx,
         const double2* ex,
         double2* ssurf,
-        const int sfirst,
-        const int slast) {
+        const long long sfirst,
+        const long long slast) {
 
     #pragma ivdep
-    for (int s = sfirst; s < slast; ++s) {
-        int z = mapsz[s];
-        int e = mapse[s];
+    for (long long s = sfirst; s < slast; ++s) {
+        long long z = mapsz[s];
+        long long e = mapse[s];
 
         ssurf[s] = rotateCCW(ex[e] - zx[z]);
 
@@ -561,13 +561,13 @@ void Mesh::calcSurfVecs(
 void Mesh::calcEdgeLen(
         const double2* px,
         double* elen,
-        const int sfirst,
-        const int slast) {
+        const long long sfirst,
+        const long long slast) {
 
-    for (int s = sfirst; s < slast; ++s) {
-        const int p1 = mapsp1[s];
-        const int p2 = mapsp2[s];
-        const int e = mapse[s];
+    for (long long s = sfirst; s < slast; ++s) {
+        const long long p1 = mapsp1[s];
+        const long long p2 = mapsp2[s];
+        const long long e = mapse[s];
 
         elen[e] = length(px[p2] - px[p1]);
 
@@ -578,16 +578,16 @@ void Mesh::calcEdgeLen(
 void Mesh::calcCharLen(
         const double* sarea,
         double* zdl,
-        const int sfirst,
-        const int slast) {
+        const long long sfirst,
+        const long long slast) {
 
-    int zfirst = mapsz[sfirst];
-    int zlast = (slast < nums ? mapsz[slast] : numz);
+    long long zfirst = mapsz[sfirst];
+    long long zlast = (slast < nums ? mapsz[slast] : numz);
     fill(&zdl[zfirst], &zdl[zlast], 1.e99);
 
-    for (int s = sfirst; s < slast; ++s) {
-        int z = mapsz[s];
-        int e = mapse[s];
+    for (long long s = sfirst; s < slast; ++s) {
+        long long z = mapsz[s];
+        long long e = mapse[s];
 
         double area = sarea[s];
         double base = elen[e];
@@ -604,8 +604,8 @@ void Mesh::parallelGather(
         T* prxvar) {
 #ifdef USE_MPI
     // This routine gathers slave values for which MYPE owns the masters.
-    const int tagmpi = 100;
-    const int type_size = sizeof(T);
+    const long long tagmpi = 100;
+    const long long type_size = sizeof(T);
 //    std::vector<T> slvvar(numslv);
     T* slvvar = Memory::alloc<T>(numslv);
 
@@ -613,25 +613,25 @@ void Mesh::parallelGather(
     // Store results in proxy buffer.
 //    vector<MPI_Request> request(numslvpe);
     MPI_Request* request = Memory::alloc<MPI_Request>(numslvpe);
-    for (int slvpe = 0; slvpe < numslvpe; ++slvpe) {
-        int pe = mapslvpepe[slvpe];
-        int nprx = slvpenumprx[slvpe];
-        int prx1 = mapslvpeprx1[slvpe];
+    for (long long slvpe = 0; slvpe < numslvpe; ++slvpe) {
+        long long pe = mapslvpepe[slvpe];
+        long long nprx = slvpenumprx[slvpe];
+        long long prx1 = mapslvpeprx1[slvpe];
         MPI_Irecv(&prxvar[prx1], nprx * type_size, MPI_BYTE,
                 pe, tagmpi, MPI_COMM_WORLD, &request[slvpe]);
     }
 
     // Load slave data buffer from points.
-    for (int slv = 0; slv < numslv; ++slv) {
-        int p = mapslvp[slv];
+    for (long long slv = 0; slv < numslv; ++slv) {
+        long long p = mapslvp[slv];
         slvvar[slv] = pvar[p];
     }
 
     // Send slave data to master PEs.
-    for (int mstrpe = 0; mstrpe < nummstrpe; ++mstrpe) {
-        int pe = mapmstrpepe[mstrpe];
-        int nslv = mstrpenumslv[mstrpe];
-        int slv1 = mapmstrpeslv1[mstrpe];
+    for (long long mstrpe = 0; mstrpe < nummstrpe; ++mstrpe) {
+        long long pe = mapmstrpepe[mstrpe];
+        long long nslv = mstrpenumslv[mstrpe];
+        long long slv1 = mapmstrpeslv1[mstrpe];
         MPI_Send(&slvvar[slv1], nslv * type_size, MPI_BYTE,
                 pe, tagmpi, MPI_COMM_WORLD);
     }
@@ -639,7 +639,7 @@ void Mesh::parallelGather(
     // Wait for all receives to complete.
 //    vector<MPI_Status> status(numslvpe);
     MPI_Status* status = Memory::alloc<MPI_Status>(numslvpe);
-    int ierr = MPI_Waitall(numslvpe, &request[0], &status[0]);
+    long long ierr = MPI_Waitall(numslvpe, &request[0], &status[0]);
     if (ierr != 0) {
         cerr << "Error: parallelGather MPI error " << ierr <<
                 " on PE " << Parallel::mype << endl;
@@ -661,14 +661,14 @@ void Mesh::parallelSum(
 #ifdef USE_MPI
     // Compute sum of all (proxy/master) sets.
     // Store results in master.
-    for (int prx = 0; prx < numprx; ++prx) {
-        int p = mapprxp[prx];
+    for (long long prx = 0; prx < numprx; ++prx) {
+        long long p = mapprxp[prx];
         pvar[p] += prxvar[prx];
     }
 
     // Copy updated master data back to proxies.
-    for (int prx = 0; prx < numprx; ++prx) {
-        int p = mapprxp[prx];
+    for (long long prx = 0; prx < numprx; ++prx) {
+        long long p = mapprxp[prx];
         prxvar[prx] = pvar[p];
     }
 #endif
@@ -682,8 +682,8 @@ void Mesh::parallelScatter(
 #ifdef USE_MPI
     // This routine scatters master values on MYPE to all slave copies
     // owned by other PEs.
-    const int tagmpi = 200;
-    const int type_size = sizeof(T);
+    const long long tagmpi = 200;
+    const long long type_size = sizeof(T);
 //    std::vector<T> slvvar(numslv);
     T* slvvar = Memory::alloc<T>(numslv);
 
@@ -691,19 +691,19 @@ void Mesh::parallelScatter(
     // Store results in slave buffer.
 //    vector<MPI_Request> request(nummstrpe);
     MPI_Request* request = Memory::alloc<MPI_Request>(nummstrpe);
-    for (int mstrpe = 0; mstrpe < nummstrpe; ++mstrpe) {
-        int pe = mapmstrpepe[mstrpe];
-        int nslv = mstrpenumslv[mstrpe];
-        int slv1 = mapmstrpeslv1[mstrpe];
+    for (long long mstrpe = 0; mstrpe < nummstrpe; ++mstrpe) {
+        long long pe = mapmstrpepe[mstrpe];
+        long long nslv = mstrpenumslv[mstrpe];
+        long long slv1 = mapmstrpeslv1[mstrpe];
         MPI_Irecv(&slvvar[slv1], nslv * type_size, MPI_BYTE,
                 pe, tagmpi, MPI_COMM_WORLD,  &request[mstrpe]);
     }
 
     // Send updated slave data from proxy buffer back to slave PEs.
-    for (int slvpe = 0; slvpe < numslvpe; ++slvpe) {
-        int pe = mapslvpepe[slvpe];
-        int nprx = slvpenumprx[slvpe];
-        int prx1 = mapslvpeprx1[slvpe];
+    for (long long slvpe = 0; slvpe < numslvpe; ++slvpe) {
+        long long pe = mapslvpepe[slvpe];
+        long long nprx = slvpenumprx[slvpe];
+        long long prx1 = mapslvpeprx1[slvpe];
         MPI_Send((void*)&prxvar[prx1], nprx * type_size, MPI_BYTE,
                 pe, tagmpi, MPI_COMM_WORLD);
     }
@@ -711,7 +711,7 @@ void Mesh::parallelScatter(
     // Wait for all receives to complete.
 //    vector<MPI_Status> status(nummstrpe);
     MPI_Status* status = Memory::alloc<MPI_Status>(nummstrpe);
-    int ierr = MPI_Waitall(nummstrpe, &request[0], &status[0]);
+    long long ierr = MPI_Waitall(nummstrpe, &request[0], &status[0]);
     if (ierr != 0) {
         cerr << "Error: parallelScatter MPI error " << ierr <<
                 " on PE " << Parallel::mype << endl;
@@ -720,8 +720,8 @@ void Mesh::parallelScatter(
     }
 
     // Store slave data from buffer back to points.
-    for (int slv = 0; slv < numslv; ++slv) {
-        int p = mapslvp[slv];
+    for (long long slv = 0; slv < numslv; ++slv) {
+        long long p = mapslvp[slv];
         pvar[p] = slvvar[slv];
     }
 
@@ -750,12 +750,12 @@ void Mesh::sumOnProc(
         T* pvar) {
 
     #pragma omp parallel for schedule(static)
-    for (int pch = 0; pch < numpch; ++pch) {
-        int pfirst = pchpfirst[pch];
-        int plast = pchplast[pch];
-        for (int p = pfirst; p < plast; ++p) {
+    for (long long pch = 0; pch < numpch; ++pch) {
+        long long pfirst = pchpfirst[pch];
+        long long plast = pchplast[pch];
+        for (long long p = pfirst; p < plast; ++p) {
             T x = T();
-            for (int c = mappcfirst[p]; c >= 0; c = mapccnext[c]) {
+            for (long long c = mappcfirst[p]; c >= 0; c = mapccnext[c]) {
                 x += cvar[c];
             }
             pvar[p] = x;

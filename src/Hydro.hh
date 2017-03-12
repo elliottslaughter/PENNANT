@@ -83,8 +83,8 @@ public:
 
     void initRadialVel(
             const double vel,
-            const int pfirst,
-            const int plast);
+            const long long pfirst,
+            const long long plast);
 
     void doCycle(const double dt);
 
@@ -93,8 +93,8 @@ public:
             const double2* pu0,
             const double dt,
             double2* pxp,
-            const int pfirst,
-            const int plast);
+            const long long pfirst,
+            const long long plast);
 
     void advPosFull(
             const double2* px0,
@@ -103,38 +103,38 @@ public:
             const double dt,
             double2* px,
             double2* pu,
-            const int pfirst,
-            const int plast);
+            const long long pfirst,
+            const long long plast);
 
     void calcCrnrMass(
             const double* zr,
             const double* zarea,
             const double* smf,
             double* cmaswt,
-            const int sfirst,
-            const int slast);
+            const long long sfirst,
+            const long long slast);
 
     void sumCrnrForce(
             const double2* sf,
             const double2* sf2,
             const double2* sf3,
             double2* cftot,
-            const int sfirst,
-            const int slast);
+            const long long sfirst,
+            const long long slast);
 
     void calcAccel(
             const double2* pf,
             const double* pmass,
             double2* pa,
-            const int pfirst,
-            const int plast);
+            const long long pfirst,
+            const long long plast);
 
     void calcRho(
             const double* zm,
             const double* zvol,
             double* zr,
-            const int zfirst,
-            const int zlast);
+            const long long zfirst,
+            const long long zlast);
 
     void calcWork(
             const double2* sf,
@@ -145,8 +145,8 @@ public:
             const double dt,
             double* zw,
             double* zetot,
-            const int sfirst,
-            const int slast);
+            const long long sfirst,
+            const long long slast);
 
     void calcWorkRate(
             const double* zvol0,
@@ -155,15 +155,15 @@ public:
             const double* zp,
             const double dt,
             double* zwrate,
-            const int zfirst,
-            const int zlast);
+            const long long zfirst,
+            const long long zlast);
 
     void calcEnergy(
             const double* zetot,
             const double* zm,
             double* ze,
-            const int zfirst,
-            const int zlast);
+            const long long zfirst,
+            const long long zlast);
 
     void sumEnergy(
             const double* zetot,
@@ -175,17 +175,17 @@ public:
             const double2* pu,
             double& ei,
             double& ek,
-            const int zfirst,
-            const int zlast,
-            const int sfirst,
-            const int slast);
+            const long long zfirst,
+            const long long zlast,
+            const long long sfirst,
+            const long long slast);
 
     void calcDtCourant(
             const double* zdl,
             double& dtrec,
             char* msgdtrec,
-            const int zfirst,
-            const int zlast);
+            const long long zfirst,
+            const long long zlast);
 
     void calcDtVolume(
             const double* zvol,
@@ -193,16 +193,16 @@ public:
             const double dtlast,
             double& dtrec,
             char* msgdtrec,
-            const int zfirst,
-            const int zlast);
+            const long long zfirst,
+            const long long zlast);
 
     void calcDtHydro(
             const double* zdl,
             const double* zvol,
             const double* zvol0,
             const double dtlast,
-            const int zfirst,
-            const int zlast);
+            const long long zfirst,
+            const long long zlast);
 
     void getDtHydro(
             double& dtnew,

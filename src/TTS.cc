@@ -38,8 +38,8 @@ void TTS::calcForce(
         const double* smf,
         const double2* ssurfp,
         double2* sf,
-        const int sfirst,
-        const int slast) {
+        const long long sfirst,
+        const long long slast) {
 
     //  Side density:
     //    srho = sm/sv = zr (sm/zm) / (sv/zv)
@@ -56,8 +56,8 @@ void TTS::calcForce(
     const Mesh* mesh = hydro->mesh;
 
     #pragma ivdep
-    for (int s = sfirst; s < slast; ++s) {
-        int z = mesh->mapsz[s];
+    for (long long s = sfirst; s < slast; ++s) {
+        long long z = mesh->mapsz[s];
 
         double svfacinv = zarea[z] / sarea[s];
         double srho = zr[z] * smf[s] * svfacinv;

@@ -35,8 +35,8 @@ public:
 
     void calcForce(
             double2* sf,
-            const int sfirst,
-            const int slast);
+            const long long sfirst,
+            const long long slast);
 
     void setCornerDiv(
             double* c0area,
@@ -44,28 +44,28 @@ public:
             double* c0evol,
             double* c0du,
             double* c0cos,
-            const int sfirst,
-            const int slast);
+            const long long sfirst,
+            const long long slast);
 
     void setQCnForce(
             const double* c0div,
             const double* c0du,
             const double* c0evol,
             double2* c0qe,
-            const int sfirst,
-            const int slast);
+            const long long sfirst,
+            const long long slast);
 
     void setForce(
             const double* c0area,
             const double2* c0qe,
             double* c0cos,
             double2* sfqq,
-            const int sfirst,
-            const int slast);
+            const long long sfirst,
+            const long long slast);
 
     void setVelDiff(
-            const int sfirst,
-            const int slast);
+            const long long sfirst,
+            const long long slast);
 
 };  // class QCS
 

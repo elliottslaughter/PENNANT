@@ -21,10 +21,10 @@ using namespace std;
 HydroBC::HydroBC(
         Mesh* msh,
         const double2 v,
-        const vector<int>& mbp)
+        const vector<long long>& mbp)
     : mesh(msh), numb(mbp.size()), vfix(v) {
 
-    mapbp = Memory::alloc<int>(numb);
+    mapbp = Memory::alloc<long long>(numb);
     copy(mbp.begin(), mbp.end(), mapbp);
 
     mesh->getPlaneChunks(numb, mapbp, pchbfirst, pchblast);
@@ -38,12 +38,12 @@ HydroBC::~HydroBC() {}
 void HydroBC::applyFixedBC(
         double2* pu,
         double2* pf,
-        const int bfirst,
-        const int blast) {
+        const long long bfirst,
+        const long long blast) {
 
     #pragma ivdep
-    for (int b = bfirst; b < blast; ++b) {
-        int p = mapbp[b];
+    for (long long b = bfirst; b < blast; ++b) {
+        long long p = mapbp[b];
 
         pu[p] = project(pu[p], vfix);
         pf[p] = project(pf[p], vfix);

@@ -34,12 +34,12 @@ void WriteXY::write(
 
     using Parallel::numpe;
     using Parallel::mype;
-    const int numz = mesh->numz;
+    const long long numz = mesh->numz;
 
-    int gnumz = numz;
+    long long gnumz = numz;
     Parallel::globalSum(gnumz);
     gnumz = (mype == 0 ? gnumz : 0);
-    vector<int> penumz(mype == 0 ? numpe : 0);
+    vector<long long> penumz(mype == 0 ? numpe : 0);
     Parallel::gather(numz, &penumz[0]);
 
     vector<double> gzr(gnumz), gze(gnumz), gzp(gnumz);
@@ -52,15 +52,15 @@ void WriteXY::write(
         ofstream ofs(xyname.c_str());
         ofs << scientific << setprecision(8);
         ofs << "#  zr" << endl;
-        for (int z = 0; z < gnumz; ++z) {
+        for (long long z = 0; z < gnumz; ++z) {
             ofs << setw(5) << (z + 1) << setw(18) << gzr[z] << endl;
         }
         ofs << "#  ze" << endl;
-        for (int z = 0; z < gnumz; ++z) {
+        for (long long z = 0; z < gnumz; ++z) {
             ofs << setw(5) << (z + 1) << setw(18) << gze[z] << endl;
         }
         ofs << "#  zp" << endl;
-        for (int z = 0; z < gnumz; ++z) {
+        for (long long z = 0; z < gnumz; ++z) {
             ofs << setw(5) << (z + 1) << setw(18) << gzp[z] << endl;
         }
         ofs.close();
